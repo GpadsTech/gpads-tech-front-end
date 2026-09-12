@@ -1,0 +1,355 @@
+.container {
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(40px, 8vw, 130px);
+    padding: clamp(30px, 5vw, 60px);
+
+    background-color: #020814;
+    background-image:
+        /* Brilho suave da área da logo (reflexo no chão) */
+        radial-gradient(
+            ellipse 480px 240px at 30% 64%,
+            rgba(0, 210, 235, 0.18) 0%,
+            transparent 70%
+        ),
+        /* Brilho sutil atrás do card */
+        radial-gradient(
+            circle at 75% 50%,
+            rgba(0, 110, 220, 0.08) 0%,
+            transparent 45%
+        ),
+        /* Gradiente de fundo escuro e profundo */
+        linear-gradient(
+            135deg,
+            #010611 0%,
+            #030f22 50%,
+            #010714 100%
+        );
+    color: #ffffff;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Linhas curvas em neon de fundo */
+.ambientLines {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.85;
+}
+
+/* ========================================================
+   SEÇÃO ESQUERDA: LOGO E MARCA
+   ======================================================== */
+.brandSection {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 320px;
+    user-select: none;
+}
+
+.logoWrapper {
+    width: clamp(260px, 26vw, 360px);
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.logoImage {
+    width: 100%;
+    height: auto;
+    max-height: 380px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 35px rgba(0, 225, 245, 0.45));
+}
+
+.brandName {
+    margin-top: 18px;
+    font-size: clamp(2.2rem, 3.2vw, 3.1rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.brandName strong {
+    color: #00dfdc;
+    font-weight: 700;
+}
+
+.brandTagline {
+    margin-top: 6px;
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.45em;
+    color: #8faec5;
+    text-transform: lowercase;
+}
+
+/* ========================================================
+   SEÇÃO DIREITA: CARD DE LOGIN
+   ======================================================== */
+.loginCard {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 440px;
+    padding: clamp(32px, 4vw, 46px);
+
+    background: rgba(3, 14, 28, 0.72);
+    border: 1px solid rgba(0, 195, 235, 0.42);
+    border-radius: 18px;
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 0 30px rgba(0, 185, 235, 0.12),
+        inset 0 0 20px rgba(0, 210, 245, 0.04);
+}
+
+.titulo {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: left;
+    letter-spacing: -0.01em;
+}
+
+.subtitulo {
+    margin-top: 6px;
+    margin-bottom: 28px;
+    font-size: 14px;
+    color: #7b94ad;
+    text-align: left;
+}
+
+.formulario {
+    display: flex;
+    flex-direction: column;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.campo label {
+    margin-bottom: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #cfdeee;
+    text-align: left;
+}
+
+/* Container de entrada com ícones */
+.inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.inputIcon {
+    position: absolute;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #557291;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.inputWrapper input {
+    width: 100%;
+    height: 48px;
+    padding: 0 44px 0 44px;
+    border-radius: 9px;
+    border: 1px solid rgba(22, 55, 90, 0.85);
+    background-color: rgba(4, 18, 34, 0.75);
+    color: #ffffff;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.inputWrapper input::placeholder {
+    color: #4b6685;
+    font-size: 13.5px;
+}
+
+.inputWrapper input:focus {
+    outline: none;
+    border-color: #00d2df;
+    background-color: rgba(4, 22, 42, 0.95);
+    box-shadow: 0 0 14px rgba(0, 210, 223, 0.28);
+}
+
+.inputWrapper:focus-within .inputIcon {
+    color: #00d2df;
+}
+
+/* Botão de alternar visualização da senha */
+.toggleSenhaBtn {
+    position: absolute;
+    right: 12px;
+    background: transparent;
+    border: none;
+    padding: 6px;
+    color: #557291;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+    border-radius: 4px;
+}
+
+.toggleSenhaBtn:hover {
+    color: #00d2df;
+}
+
+/* Mensagem de Erro */
+.erro {
+    margin-top: 0;
+    margin-bottom: 18px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    background: rgba(220, 53, 69, 0.15);
+    border: 1px solid rgba(220, 53, 69, 0.4);
+    color: #ff6b7b;
+    font-size: 13.5px;
+    text-align: center;
+}
+
+/* Botão Entrar */
+.botao {
+    width: 100%;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+
+    background: #00b9c8;
+    background-image: linear-gradient(90deg, #00b5c5 0%, #00d4df 100%);
+    color: #011b24;
+
+    border: none;
+    border-radius: 9px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+
+    box-shadow: 0 4px 18px rgba(0, 210, 230, 0.32);
+    transition: all 0.2s ease;
+}
+
+.botao:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: 0 6px 24px rgba(0, 225, 245, 0.48);
+    transform: translateY(-1px);
+}
+
+.botao:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Divisor "ou" */
+.divisor {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 24px 0 20px 0;
+    color: #4a688a;
+    font-size: 13px;
+}
+
+.divisor::before,
+.divisor::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(30, 65, 100, 0.6);
+}
+
+/* Link das Estações */
+.linkEstacoesContainer {
+    display: flex;
+    justify-content: center;
+}
+
+.linkEstacoes {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: #00cad8;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 4px 8px;
+}
+
+.linkEstacoes:hover {
+    color: #3bf6ff;
+    text-shadow: 0 0 10px rgba(0, 220, 240, 0.55);
+}
+
+/* ========================================================
+   RESPONSIVIDADE (Tablets e Celulares)
+   ======================================================== */
+@media (max-width: 960px) {
+    .container {
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 30px;
+        padding: 30px 20px;
+    }
+
+    .brandSection {
+        min-width: unset;
+    }
+
+    .logoWrapper {
+        width: 220px;
+    }
+
+    .brandName {
+        font-size: 2.2rem;
+        margin-top: 12px;
+    }
+
+    .brandTagline {
+        font-size: 0.8rem;
+    }
+
+    .loginCard {
+        max-width: 420px;
+        padding: 28px 22px;
+    }
+}

@@ -1,0 +1,211 @@
+.header {
+    width: 100%;
+    height: 78px;
+    padding: 0 28px;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background: rgba(3, 14, 30, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    /* Borda apenas embaixo para integrar com a tela toda */
+    border-bottom: 1px solid rgba(0, 195, 255, 0.35);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+
+    /* Removemos a margem inferior que causava a desconexão */
+    margin-bottom: 0; 
+    z-index: 1000;
+}
+
+/* Lado Esquerdo: Marca */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+}
+
+.logoBox {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoImg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(0, 217, 235, 0.5));
+}
+
+.titulo {
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: #00e5ff;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 14px rgba(0, 229, 255, 0.4);
+}
+
+/* Centro: Navegação */
+.navegacao {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.navBtn {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 20px;
+    border-radius: 26px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(0, 217, 235, 0.25);
+    transition: all 0.25s ease;
+}
+
+.navBtn:hover {
+    border-color: rgba(0, 229, 255, 0.6);
+    color: #ffffff;
+    box-shadow: 0 0 14px rgba(0, 229, 255, 0.2);
+}
+
+.activeBtn {
+    background: #00c9e0 !important;
+    border-color: #00e5ff !important;
+    color: #021a24 !important;
+    font-weight: 700;
+    box-shadow: 0 0 22px rgba(0, 217, 235, 0.65) !important;
+}
+
+.icon {
+    width: 17px;
+    height: 17px;
+}
+
+/* Lado Direito: Perfil e Notificações */
+.usuario {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.notificacaoBtn {
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #00d9eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    transition: transform 0.2s;
+}
+
+.notificacaoBtn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.notificacaoBtn:hover {
+    transform: scale(1.08);
+}
+
+.pontoAlerta {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    width: 6px;
+    height: 6px;
+    background-color: #00e5ff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00e5ff;
+}
+
+.perfilWrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(0, 195, 255, 0.15);
+    border: 1px solid rgba(0, 217, 235, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00d9eb;
+}
+
+.avatar svg {
+    width: 22px;
+    height: 22px;
+}
+
+.informacoesUsuario {
+    display: flex;
+    flex-direction: column;
+}
+
+.nomeLinha {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nomeUsuario {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.setaBaixo {
+    width: 14px;
+    height: 14px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.emailUsuario {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.botaoSair {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 18px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.botaoSair svg {
+    width: 16px;
+    height: 16px;
+}
+
+.botaoSair:hover {
+    border-color: rgba(255, 75, 75, 0.6);
+    color: #ff6b6b;
+    box-shadow: 0 0 12px rgba(255, 75, 75, 0.2);
+}

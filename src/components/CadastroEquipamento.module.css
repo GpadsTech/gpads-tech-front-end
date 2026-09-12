@@ -1,0 +1,355 @@
+/* Container de Fundo Global da Página */
+.pageContainer {
+    width: 100%;
+    min-height: calc(100vh - 78px);
+    box-sizing: border-box;
+    padding: 24px 16px 40px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    
+    background-color: #020713;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 217, 235, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 140, 255, 0.08) 0%, transparent 45%),
+        linear-gradient(135deg, #01060f 0%, #030b18 50%, #020713 100%);
+    
+    position: relative;
+    overflow-y: auto;
+}
+
+/* Card Translúcido Principal */
+.formCard {
+    width: 100%;
+    max-width: 950px;
+    margin-top: 10px;
+    padding: 36px 44px;
+    
+    background: rgba(3, 14, 30, 0.7);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    
+    border: 1.5px solid rgba(0, 217, 235, 0.45);
+    border-radius: 20px;
+    
+    box-shadow: 
+        inset 0 1px 1px rgba(255, 255, 255, 0.08),
+        0 15px 40px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(0, 217, 235, 0.12);
+}
+
+/* Cabeçalho do Card */
+.formHeader {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 34px;
+}
+
+.iconWrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: rgba(0, 217, 235, 0.12);
+    border: 1.5px solid rgba(0, 217, 235, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00e5ff;
+}
+
+.iconWrapper svg {
+    width: 28px;
+    height: 28px;
+}
+
+.titulo {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: -0.01em;
+}
+
+.subtitulo {
+    margin: 4px 0 0 0;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Estrutura do Formulário */
+.formulario {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.gridDuasColunas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.campo label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e0f2ff;
+}
+
+/* Inputs Escuros com Borda Ciano */
+.campo input, .pesquisaRow input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px;
+    
+    background: rgba(4, 18, 38, 0.6);
+    border: 1px solid rgba(0, 166, 255, 0.3);
+    border-radius: 8px;
+    
+    color: #ffffff;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: all 0.25s ease;
+}
+
+.campo input::placeholder, .pesquisaRow input::placeholder {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.campo input:focus, .pesquisaRow input:focus {
+    outline: none;
+    border-color: rgba(0, 225, 255, 0.8);
+    background: rgba(5, 24, 52, 0.85);
+    box-shadow: 0 0 14px rgba(0, 217, 235, 0.25);
+}
+
+.campo input:read-only {
+    background: rgba(2, 9, 20, 0.5);
+    color: rgba(255, 255, 255, 0.6);
+    cursor: not-allowed;
+    border-color: rgba(0, 166, 255, 0.15);
+}
+
+/* Bloco de Pesquisa */
+.blocoPesquisa {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tituloPesquisa {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #e0f2ff;
+}
+
+.subtituloPesquisa {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 4px;
+}
+
+.pesquisaRow {
+    display: flex;
+    gap: 12px;
+}
+
+.btnPesquisa {
+    height: 48px;
+    padding: 0 20px;
+    border: 1px solid rgba(0, 217, 235, 0.5);
+    border-radius: 8px;
+    background: transparent;
+    color: #00e5ff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btnPesquisa svg {
+    width: 18px;
+    height: 18px;
+}
+
+.btnPesquisa:hover:not(:disabled) {
+    background: rgba(0, 217, 235, 0.15);
+    box-shadow: 0 0 12px rgba(0, 217, 235, 0.2);
+}
+
+/* Resultados da Pesquisa */
+.resultadosLista {
+    margin-top: 8px;
+    background: rgba(4, 18, 38, 0.8);
+    border: 1px solid rgba(0, 217, 235, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.resultadoItem {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(0, 217, 235, 0.15);
+    color: #ffffff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+}
+
+.resultadoItem:last-child {
+    border-bottom: none;
+}
+
+.resultadoItem:hover {
+    background: rgba(0, 217, 235, 0.15);
+}
+
+.resultadoItem svg {
+    width: 16px;
+    height: 16px;
+    color: #00e5ff;
+}
+
+/* Área do Mapa */
+.mapaContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.mapaHeaderInfo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #00e5ff;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.mapaHeaderInfo svg {
+    width: 18px;
+    height: 18px;
+}
+
+.mapFrame {
+    width: 100%;
+    height: 380px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1.5px solid rgba(0, 217, 235, 0.6);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 217, 235, 0.15);
+}
+
+/* Alertas de Erro e Sucesso */
+.mensagemErro, .mensagemSucesso {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+.mensagemErro {
+    background: rgba(255, 75, 75, 0.15);
+    border: 1px solid rgba(255, 75, 75, 0.4);
+    color: #ff6b6b;
+}
+
+.mensagemSucesso {
+    background: rgba(0, 225, 120, 0.15);
+    border: 1px solid rgba(0, 225, 120, 0.4);
+    color: #3ded97;
+}
+
+.mensagemErro svg, .mensagemSucesso svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* Botão Principal Neon */
+.footerForm {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 14px;
+}
+
+.btnPrimario {
+    height: 48px;
+    padding: 0 28px;
+    border: none;
+    border-radius: 10px;
+    
+    background: linear-gradient(90deg, #00b9d6 0%, #00e5ff 100%);
+    color: #011e28;
+    
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    
+    box-shadow: 0 6px 18px rgba(0, 217, 235, 0.25);
+    transition: all 0.25s ease;
+}
+
+.btnPrimario svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btnPrimario:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 217, 235, 0.45);
+}
+
+.btnPrimario:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsividade */
+@media (max-width: 680px) {
+    .gridDuasColunas {
+        grid-template-columns: 1fr;
+        gap: 22px;
+    }
+    
+    .pesquisaRow {
+        flex-direction: column;
+    }
+    
+    .formCard {
+        padding: 24px 20px;
+    }
+    
+    .titulo {
+        font-size: 1.4rem;
+    }
+    
+    .mapFrame {
+        height: 300px;
+    }
+}

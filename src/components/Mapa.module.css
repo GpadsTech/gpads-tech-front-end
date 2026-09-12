@@ -1,0 +1,374 @@
+/* Container de Fundo da Tela */
+.pageContainer {
+    width: 100vw;
+    height: 100vh;
+    box-sizing: border-box;
+    padding: 16px 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    background-color: #020713;
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 217, 235, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 140, 255, 0.12) 0%, transparent 45%),
+        linear-gradient(135deg, #01060f 0%, #030b18 50%, #020713 100%);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Moldura Neon ao Redor do Mapa */
+.mapFrame {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1.5px solid rgba(0, 217, 235, 0.7);
+    box-shadow: 
+        inset 0 0 25px rgba(0, 217, 235, 0.2),
+        0 0 35px rgba(0, 217, 235, 0.25),
+        0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Widget de Clima/Temperatura (canto inferior esquerdo) */
+.weatherWidget {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(3, 14, 30, 0.75);
+    border: 1px solid rgba(0, 217, 235, 0.4);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 12px rgba(0, 217, 235, 0.2);
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.weatherIcon {
+    font-size: 1.25rem;
+}
+
+/* Alertas de Carregamento e Erro */
+.loadingOverlay, .errorOverlay {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.loadingOverlay {
+    background: rgba(0, 217, 235, 0.2);
+    border: 1px solid #00e5ff;
+    color: #00e5ff;
+}
+
+.errorOverlay {
+    background: rgba(255, 60, 60, 0.2);
+    border: 1px solid #ff4b4b;
+    color: #ff6b6b;
+}
+
+/* Customização dos Popups do Leaflet para Tema Neon */
+:global(.leaflet-popup-content-wrapper) {
+    background: rgba(3, 15, 33, 0.88) !important;
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 217, 235, 0.5);
+    border-radius: 12px;
+    color: #ffffff !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 217, 235, 0.3) !important;
+}
+
+:global(.leaflet-popup-tip) {
+    background: rgba(3, 15, 33, 0.88) !important;
+    border: 1px solid rgba(0, 217, 235, 0.5);
+}
+
+:global(.leaflet-popup-content) {
+    margin: 14px 16px;
+    line-height: 1.5;
+    font-size: 0.88rem;
+}
+
+:global(.leaflet-popup-content button) {
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(90deg, #00b9d6, #00e5ff);
+    color: #021a24;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+:global(.leaflet-popup-content button:hover) {
+    transform: translateY(-1px);
+    box-shadow: 0 0 12px rgba(0, 229, 255, 0.5);
+}
+
+/* Customização dos botões de Zoom do Leaflet */
+:global(.leaflet-bar) {
+    border: 1px solid rgba(0, 217, 235, 0.4) !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+    background: rgba(3, 15, 33, 0.75) !important;
+    backdrop-filter: blur(10px);
+}
+
+:global(.leaflet-bar a) {
+    background-color: transparent !important;
+    color: #00e5ff !important;
+    border-bottom: 1px solid rgba(0, 217, 235, 0.2) !important;
+}
+
+:global(.leaflet-bar a:hover) {
+    background-color: rgba(0, 217, 235, 0.2) !important;
+}
+
+/* Container de Fundo da Tela */
+.pageContainer {
+    width: 100%;
+    height: calc(100vh - 100px); /* Ocupa todo o espaço abaixo do Header */
+    min-height: 500px;
+    box-sizing: border-box;
+    padding: 10px 24px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    background-color: transparent;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Moldura Neon ao Redor do Mapa */
+.mapFrame {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1.5px solid rgba(0, 217, 235, 0.7);
+    box-shadow: 
+        inset 0 0 25px rgba(0, 217, 235, 0.2),
+        0 0 35px rgba(0, 217, 235, 0.25),
+        0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+/* Widget de Clima/Temperatura (canto inferior esquerdo) */
+.weatherWidget {
+    position: absolute;
+    bottom: 24px;
+    left: 24px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(3, 14, 30, 0.85);
+    border: 1px solid rgba(0, 217, 235, 0.4);
+    border-radius: 12px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 12px rgba(0, 217, 235, 0.2);
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.weatherIcon {
+    font-size: 1.25rem;
+}
+
+/* Alertas de Carregamento e Erro */
+.loadingOverlay, .errorOverlay {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    z-index: 1000;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    backdrop-filter: blur(10px);
+}
+
+.loadingOverlay {
+    background: rgba(0, 217, 235, 0.2);
+    border: 1px solid #00e5ff;
+    color: #00e5ff;
+}
+
+.errorOverlay {
+    background: rgba(255, 60, 60, 0.2);
+    border: 1px solid #ff4b4b;
+    color: #ff6b6b;
+}
+
+/* ===== ESTILIZAÇÃO E EXPANSÃO DO CARD POPUP DO MAPA ===== */
+
+:global(.leaflet-popup-content-wrapper) {
+    background: rgba(3, 15, 33, 0.94) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(0, 217, 235, 0.6) !important;
+    border-radius: 16px !important;
+    color: #ffffff !important;
+    box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.8),
+        0 0 25px rgba(0, 217, 235, 0.3) !important;
+    padding: 0 !important;
+}
+
+:global(.leaflet-popup-content) {
+    margin: 0 !important;
+    line-height: normal !important;
+    min-width: 290px;
+    max-width: 340px;
+}
+
+:global(.leaflet-popup-tip) {
+    background: rgba(3, 15, 33, 0.94) !important;
+    border: 1.5px solid rgba(0, 217, 235, 0.6) !important;
+}
+
+:global(.leaflet-container a.leaflet-popup-close-button) {
+    color: #00d9eb !important;
+    padding: 8px 10px 0 0 !important;
+    font-size: 20px !important;
+}
+
+:global(.leaflet-container a.leaflet-popup-close-button:hover) {
+    color: #ffffff !important;
+}
+
+/* Conteúdo Estruturado do Card */
+.popupCard {
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.popupHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-bottom: 1px solid rgba(0, 217, 235, 0.2);
+    padding-bottom: 10px;
+}
+
+.popupBadge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #00e5ff;
+}
+
+.popupTitle {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.popupBody {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.popupInfoRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.92rem;
+}
+
+.infoLabel {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+}
+
+.infoValue {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+/* Botões do Popup */
+.popupActions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.popupBtnPrimary {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, #00b9d6 0%, #00e5ff 100%);
+    color: #011924;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 15px rgba(0, 217, 235, 0.3);
+}
+
+.popupBtnPrimary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 217, 235, 0.5);
+}
+
+.popupBtnSecondary {
+    width: 100%;
+    height: 36px;
+    border: 1px solid rgba(0, 217, 235, 0.35);
+    border-radius: 10px;
+    background: rgba(0, 217, 235, 0.08);
+    color: #00e5ff;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.popupBtnSecondary:hover {
+    background: rgba(0, 217, 235, 0.18);
+    border-color: #00e5ff;
+}
+
+/* Botões de Zoom do Mapa Leaflet */
+:global(.leaflet-bar) {
+    border: 1px solid rgba(0, 217, 235, 0.4) !important;
+    border-radius: 10px !important;
+    overflow: hidden;
+    background: rgba(3, 15, 33, 0.85) !important;
+    backdrop-filter: blur(10px);
+}
+
+:global(.leaflet-bar a) {
+    background-color: transparent !important;
+    color: #00e5ff !important;
+    border-bottom: 1px solid rgba(0, 217, 235, 0.2) !important;
+}
+
+:global(.leaflet-bar a:hover) {
+    background-color: rgba(0, 217, 235, 0.25) !important;
+    color: #ffffff !important;
+}

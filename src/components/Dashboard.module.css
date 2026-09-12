@@ -1,0 +1,275 @@
+/* Container Principal do Dashboard */
+.dashboard {
+    width: 100%;
+    min-height: 100%;
+    padding: 24px;
+    position: relative;
+    box-sizing: border-box;
+    
+    background: rgba(3, 14, 30, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    
+    border: 1.5px solid rgba(0, 217, 235, 0.4);
+    border-radius: 20px;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
+    
+    /* Caso ele abra como overlay flutuante */
+    animation: fadeSlideUp 0.3s ease-out;
+}
+
+@keyframes fadeSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header do Dashboard */
+.headerDashboard {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid rgba(0, 217, 235, 0.25);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+}
+
+.titulo {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 12px rgba(0, 229, 255, 0.3);
+}
+
+.subtitulo {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.65);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.badge {
+    background: rgba(0, 217, 235, 0.15);
+    border: 1px solid rgba(0, 217, 235, 0.5);
+    color: #00e5ff;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Status de Conexão */
+.statusRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e0f2ff;
+}
+
+.statusDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Botões do Topo (Histórico e Fechar) */
+.actionsBox {
+    display: flex;
+    gap: 12px;
+}
+
+.btnHistorico {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 20px;
+    height: 42px;
+    border: 1px solid rgba(0, 217, 235, 0.5);
+    border-radius: 10px;
+    text-decoration: none;
+    color: #00e5ff;
+    font-weight: 600;
+    font-size: 0.95rem;
+    background: rgba(0, 217, 235, 0.08);
+    transition: all 0.2s ease;
+}
+
+.btnHistorico svg {
+    width: 18px;
+    height: 18px;
+}
+
+.btnHistorico:hover {
+    background: rgba(0, 217, 235, 0.2);
+    box-shadow: 0 0 15px rgba(0, 217, 235, 0.3);
+}
+
+.btnClose {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    background: transparent;
+    border: 1px solid rgba(255, 75, 75, 0.4);
+    border-radius: 10px;
+    color: #ff6b6b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btnClose svg {
+    width: 20px;
+    height: 20px;
+}
+
+.btnClose:hover {
+    background: rgba(255, 75, 75, 0.15);
+    border-color: #ff6b6b;
+    box-shadow: 0 0 15px rgba(255, 75, 75, 0.3);
+}
+
+/* Layout Grid dos Cards */
+.grid {
+    display: grid;
+    /* Usa auto-fit para se adaptar a diferentes tamanhos de tela */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* Estilo do Card Neon */
+.card {
+    background: rgba(4, 18, 38, 0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
+    border: 1px solid rgba(0, 195, 255, 0.25);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 10px 20px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0, 229, 255, 0.6);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 229, 255, 0.2);
+}
+
+/* Textos dentro do Card (Ex: Última Leitura) */
+.cardInfoTitle {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.65);
+    margin: 0 0 12px 0;
+    text-align: center;
+}
+
+.cardInfoData {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0;
+    text-align: center;
+}
+
+.cardInfoHora {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #00e5ff;
+    margin: 6px 0 0 0;
+    text-align: center;
+}
+
+/* Estilos Internos do Gráfico (LineChart) */
+.chartTitle {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.65);
+    margin: 0 0 4px 0;
+    text-align: center;
+}
+
+.chartValue {
+    font-size: 1.6rem;
+    font-weight: 800;
+    text-align: center;
+    margin: 0 0 12px 0;
+}
+
+.chartUnit {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* Utilitários de Alertas */
+.loadingBox, .errorBox, .emptyBox {
+    width: 100%;
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.loadingBox {
+    color: #00e5ff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(0, 217, 235, 0.2);
+    border-top-color: #00e5ff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.errorBox {
+    background: rgba(255, 75, 75, 0.15);
+    border: 1px solid rgba(255, 75, 75, 0.4);
+    color: #ff6b6b;
+}
+
+.emptyBox {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+    .headerDashboard {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .actionsBox {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
