@@ -273,3 +273,49 @@
         grid-template-columns: 1fr;
     }
 }
+
+
+/* =========================================
+   RESPONSIVIDADE - CELULARES E TABLETS
+   ========================================= */
+@media (max-width: 768px) {
+    /* 1. O painel principal ocupa 100% da tela */
+    .dashboard {
+        width: 100% !important;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+
+    /* 2. O cabeçalho empilha o título e o botão de fechar */
+    .headerDashboard {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    /* 3. Coloca o botão de fechar no canto superior direito */
+    .actionsBox {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+    }
+
+    /* 4. O mais importante: Transforma o grid de colunas em 1 coluna só (ou 2) */
+    .grid {
+        display: grid;
+        /* Altera para 1 coluna no celular para os gráficos não esmagarem */
+        grid-template-columns: 1fr !important; 
+        gap: 15px;
+        width: 100%;
+    }
+
+    .card {
+        width: 100%;
+        margin: 0;
+    }
+
+    /* Diminui um pouco o título para caber melhor */
+    .titulo {
+        font-size: 1.5rem;
+    }
+}

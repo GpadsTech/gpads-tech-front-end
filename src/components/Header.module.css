@@ -209,3 +209,13 @@
     color: #ff6b6b;
     box-shadow: 0 0 12px rgba(255, 75, 75, 0.2);
 }
+
+@media (max-width: 768px) {
+    .headerContainer {
+        flex-direction: column; /* Empilha a logo e os botões */
+        align-items: center;
+        text-align: center;
+        gap: 10px;
+        padding: 10px;
+    }
+}

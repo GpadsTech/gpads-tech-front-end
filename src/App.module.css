@@ -17,3 +17,24 @@
 .leaflet-container img {
   max-width: none !important;
 }
+
+@media (max-width: 768px) {
+    .container {
+        display: flex;
+        flex-direction: column; /* Coloca o mapa em cima e o dashboard embaixo (ou vice-versa) */
+        height: auto;
+        min-height: 100vh;
+    }
+
+    .mapa {
+        width: 100% !important;
+        height: 50vh !important; /* Mapa ocupa metade da tela no celular */
+    }
+
+    /* Se o dashboard estava flutuando ao lado, agora ele ocupa a parte de baixo */
+    .dashboard {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+}
