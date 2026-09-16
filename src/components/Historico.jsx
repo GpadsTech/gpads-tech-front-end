@@ -12,7 +12,7 @@ import {
     Tooltip, ResponsiveContainer
 } from 'recharts'
 
-// Ícone de mapa personalizado com Neon Cyan
+
 const customNeonMarker = L.divIcon({
     className: 'custom-neon-pin',
     html: `
