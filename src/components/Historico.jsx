@@ -134,7 +134,7 @@ function Historico() {
             if (dataFinal) parametros.append('fim', dataFinal)
 
             const queryString = parametros.toString()
-            const url = `http://127.0.0.1:8000/api/equipamentos/${identifier}/historico/` + (queryString ? `?${queryString}` : '')
+            const url = `https://gpads-api-dados.onrender.com/api/equipamentos/${identifier}/historico/` + (queryString ? `?${queryString}` : '')
 
             const response = await fetch(url, {
                 method: "GET",
