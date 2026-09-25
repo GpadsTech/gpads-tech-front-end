@@ -210,11 +210,13 @@ function Dashboard({ equipamento, onFechar }) {
     const valorPressao = leitura?.["pressão"] ?? leitura?.pressao ?? 0
     const valorRpm = leitura?.rpm ?? 0
     const valorVento = leitura?.vento ?? 0
+    const valorLuz = leitura?.luz ?? 0
 
     const valorPh = leitura?.ph ?? 0
-    const valorTurbidez = leitura?.turbidez_v ?? 0
+    const valorTurbidez = leitura?.turbidez_ntu ?? 0
     const valorSensorUV = leitura?.sensor_uv_v ?? 0
     const valorAdc = leitura?.adc ?? 0
+    const valorTensao = leitura?.tensao_v ?? 0
 
     return (
         <div className={styles.dashboard}>
@@ -332,6 +334,10 @@ function Dashboard({ equipamento, onFechar }) {
                     <div className={styles.card}><Gauge titulo="Turbidez" valor={valorTurbidez} min={0} max={100} cor="#557db4" unidade="V" /></div>
                     <div className={styles.card}><Gauge titulo="Sensor UV" valor={valorSensorUV} min={0} max={5} cor="#f5a623" unidade="V" /></div>
                     <div className={styles.card}><Gauge titulo="ADC" valor={valorAdc} min={0} max={4095} cor="#9b6cbb" unidade="" /></div>
+                    <div className={styles.card}>
+                        <SensorLineChart titulo="Tensão Elétrica" dados={leituras} campo="tensao_v" unidade="V" cor="#a259f7" dominio={[0, 5]} formatarY={v => `${v}V`} />
+                    </div>
+                    
                 </div>
             )}
         </div>

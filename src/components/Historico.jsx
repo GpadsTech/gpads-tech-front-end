@@ -306,7 +306,7 @@ function Historico() {
                                 {equipamento.tipo === 'boia' && (
                                     <>
                                         <GraficoHistorico titulo="pH" dados={dadosDaLocalizacaoSelecionada} dataKey="ph" unidade="" corLinha="#00e5ff" />
-                                        <GraficoHistorico titulo="Turbidez" dados={dadosDaLocalizacaoSelecionada} dataKey="turbidez_v" unidade="" corLinha="#557db4" />
+                                        <GraficoHistorico titulo="Turbidez" dados={dadosDaLocalizacaoSelecionada} dataKey="turbidez_ntu" unidade="" corLinha="#557db4" />
                                         <GraficoHistorico titulo="Sensor UV" dados={dadosDaLocalizacaoSelecionada} dataKey="sensor_uv_v" unidade="V" corLinha="#f5a623" />
                                         <GraficoHistorico titulo="ADC" dados={dadosDaLocalizacaoSelecionada} dataKey="adc" unidade="" corLinha="#9b6cbb" />
                                     </>

@@ -6,7 +6,7 @@ import {
     Tooltip, ResponsiveContainer
 } from 'recharts'
 
-const API_URL = "https://gpads-api-dados.onrender.com"
+const API_URL = "http://127.0.0.1:8000"
 
 function SensorLineChart({ titulo, dados, campo, unidade, cor, dominio = [0, 100], formatarY }) {
     const historico = dados
@@ -179,7 +179,7 @@ function DashboardPublico({ equipamento, onFechar }) {
             {!carregando && !erro && leitura && isBoia && (
                 <div className={styles.grid}>
                     <div className={styles.card}><Gauge titulo="pH" valor={leitura?.ph??0} min={0} max={14} cor="#00e5ff" unidade="pH" /></div>
-                    <div className={styles.card}><Gauge titulo="Turbidez" valor={leitura?.turbidez_v??0} min={0} max={100} cor="#557db4" unidade="V" /></div>
+                    <div className={styles.card}><Gauge titulo="Turbidez" valor={leitura?.turbidez_ntu??0} min={0} max={100} cor="#557db4" unidade="V" /></div>
                     <div className={styles.card}><Gauge titulo="Sensor UV" valor={leitura?.sensor_uv_v??0} min={0} max={5} cor="#f5a623" unidade="V" /></div>
                     <div className={styles.card}><Gauge titulo="ADC" valor={leitura?.adc??0} min={0} max={4095} cor="#9b6cbb" unidade="" /></div>
                 </div>
