@@ -178,6 +178,12 @@ function DashboardPublico({ equipamento, onFechar }) {
 
             {!carregando && !erro && leitura && isBoia && (
                 <div className={styles.grid}>
+                    <div className={styles.card}>
+                        <p className={styles.cardInfoTitle}>Última leitura</p>
+                        {leitura?.hora ? (
+                            <><p className={styles.cardInfoData}>{dataHoraLeitura.data}</p><p className={styles.cardInfoHora}>{dataHoraLeitura.hora}</p></>
+                        ) : (<p className={styles.cardInfoData}>—</p>)}
+                    </div>
                     <div className={styles.card}><Gauge titulo="pH" valor={leitura?.ph??0} min={0} max={14} cor="#00e5ff" unidade="pH" /></div>
                     <div className={styles.card}><Gauge titulo="Turbidez" valor={leitura?.turbidez_ntu??0} min={0} max={100} cor="#557db4" unidade="V" /></div>
                     <div className={styles.card}><Gauge titulo="Sensor UV" valor={leitura?.sensor_uv_v??0} min={0} max={5} cor="#f5a623" unidade="V" /></div>
