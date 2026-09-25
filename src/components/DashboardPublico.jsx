@@ -6,7 +6,7 @@ import {
     Tooltip, ResponsiveContainer
 } from 'recharts'
 
-const API_URL = "http://127.0.0.1:8000"
+const API_URL = "https://gpads-api-dados.onrender.com"
 
 function SensorLineChart({ titulo, dados, campo, unidade, cor, dominio = [0, 100], formatarY }) {
     const historico = dados
