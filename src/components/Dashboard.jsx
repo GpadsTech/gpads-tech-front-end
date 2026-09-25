@@ -9,7 +9,6 @@ import {
 } from 'recharts'
 
 const API_URL = "https://gpads-api-dados.onrender.com"
-
 function SensorLineChart({
     titulo,
     dados,
