@@ -80,13 +80,18 @@
     display: inline-block;
 }
 
-/* Botões do Topo (Histórico e Fechar) */
+/* Botões do Topo (Gerar Relatório, Histórico e Fechar) */
 .actionsBox {
     display: flex;
     gap: 12px;
 }
 
-.btnHistorico {
+/* Como os botões Gerar Relatório e Histórico usam o mesmo CSS
+    A estilização preferencialmente deve ser geral para todo
+    botão de ação novo para manter uma mesma estética */
+
+/*.btnHistorico */
+.btnAction {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -102,12 +107,14 @@
     transition: all 0.2s ease;
 }
 
-.btnHistorico svg {
+/*.btnHistorico */
+.btnAction svg {
     width: 18px;
     height: 18px;
 }
 
-.btnHistorico:hover {
+/*.btnHistorico:hover */
+.btnAction:hover {
     background: rgba(0, 217, 235, 0.2);
     box-shadow: 0 0 15px rgba(0, 217, 235, 0.3);
 }

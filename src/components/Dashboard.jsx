@@ -250,7 +250,17 @@ function Dashboard({ equipamento, onFechar }) {
                 </div>
 
                 <div className={styles.actionsBox}>
-                    <Link to={`/historico/${equipamento.identificador}`} className={styles.btnHistorico}>
+                    {/* Botão adicionado "Gerar Relatório" */}
+                    <Link className={styles.btnAction}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                            <line x1="9" y1="12" x2="15" y2="12" />
+                            <line x1="9" y1="16" x2="13" y2="16" />
+                        </svg>
+                        Gerar Relatório
+                    </Link>
+                    <Link to={`/historico/${equipamento.identificador}`} className={styles.btnAction}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="12 8 12 12 14 14" />
                             <circle cx="12" cy="12" r="10" />
