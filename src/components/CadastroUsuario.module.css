@@ -286,4 +286,8 @@
     .titulo {
         font-size: 1.4rem;
     }
+
+    .iconWrapper {
+        margin-right: 1px;
+    }
 }

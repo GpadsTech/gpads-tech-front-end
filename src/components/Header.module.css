@@ -210,12 +210,52 @@
     box-shadow: 0 0 12px rgba(255, 75, 75, 0.2);
 }
 
-@media (max-width: 768px) {
-    .headerContainer {
-        flex-direction: column; /* Empilha a logo e os botões */
-        align-items: center;
-        text-align: center;
-        gap: 10px;
-        padding: 10px;
+/* ====Responsividade Gradual==== */
+@media (max-width: 1100px) {
+    .titulo {
+        display: none;
+    }    
+}
+
+@media (max-width: 970px) {
+    .botaoSair span {
+        display: none;
+    }
+    .nomeUsuario, .emailUsuario {
+        display: none;
+    }
+}
+
+@media (max-width: 820px) {
+    .navBtn span {
+        display: none;
+    }
+
+    .activeBtn span {
+        display: inline-block;
+    }
+
+    /* Exibe o texto de todos os botões de navegação caso não haja um ativo */
+    .navegacao:not(:has(.activeBtn)) + .brand span {
+        display: inline-block;
+    }
+}
+
+@media (max-width: 500px) {
+    .header {
+    height: fit-content;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 10px;
+    }
+
+    .titulo {
+        display: inline-block;
+    }
+
+    .nomeUsuario, .emailUsuario {
+        display: inline-block;
     }
 }
