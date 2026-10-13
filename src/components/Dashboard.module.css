@@ -319,3 +319,45 @@
         font-size: 1.5rem;
     }
 }
+.tituloRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btnChat {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.5);
+  border-radius: 8px;
+  color: #00e5ff;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btnChat svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btnChat:hover {
+  background: rgba(0, 229, 255, 0.18);
+  box-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+
+.chatPopup {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 360px;
+  height: 480px;
+  z-index: 2000;
+  background: #030e1e;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+}

@@ -1,5 +1,6 @@
 import Gauge from './Gauge.jsx'
 import styles from './Dashboard.module.css'
+import Chatbot from './Chatbot.jsx' // ajuste o caminho
 import { useEffect, useState } from 'react'
 import { getIdToken } from '../auth.js'
 import { Link } from 'react-router-dom'
@@ -113,6 +114,7 @@ function Dashboard({ equipamento, onFechar }) {
     const [leitura, setLeitura] = useState(null)
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState(null)
+    const [chatAberto, setChatAberto] = useState(false)
     const dataHoraLeitura = formatarDataHora(leitura?.hora)
     const [leituras, setLeituras] = useState([])
     const [statusDados, setStatusDados] = useState('carregando')
@@ -223,8 +225,19 @@ function Dashboard({ equipamento, onFechar }) {
             {/* Header do Dashboard */}
             <div className={styles.headerDashboard}>
                 <div>
-                    <h2 className={styles.titulo}>{equipamento.nome}</h2>
-                    <div className={styles.subtitulo}>
+                <div className={styles.tituloRow}>
+                <h2 className={styles.titulo}>{equipamento.nome}</h2>
+                <button
+                className={styles.btnChat}
+                onClick={() => setChatAberto(aberto => !aberto)}
+                title="Abrir chatbot"
+             aria-label="Abrir chatbot"
+              >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+    </button>
+</div>                    <div className={styles.subtitulo}>
                         <span className={styles.badge}>{isBoia ? 'Boia' : 'Estação'}</span>
                         {' • '}
                         Identificador: {equipamento.identificador}
@@ -339,7 +352,12 @@ function Dashboard({ equipamento, onFechar }) {
                     
                 </div>
             )}
-        </div>
+                    {chatAberto && (
+            <div className={styles.chatPopup}>
+                <Chatbot />
+            </div>
+        )}
+    </div>
     )
 }
 
