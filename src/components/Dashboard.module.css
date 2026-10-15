@@ -25,6 +25,7 @@
 
 /* Header do Dashboard */
 .headerDashboard {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -94,6 +95,7 @@
 .btnAction {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 0 20px;
     height: 42px;
@@ -150,6 +152,17 @@
     /* Usa auto-fit para se adaptar a diferentes tamanhos de tela */
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
+}
+
+/* Chatbot Card */
+.chatCard {
+  grid-column: 1 / -1;
+  height: 500px;
+  background: #030e1e;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 195, 255, 0.25);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 10px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Estilo do Card Neon */
@@ -264,9 +277,12 @@
     color: rgba(255, 255, 255, 0.6);
 }
 
-/* Responsividade 
-   Ótima responsividade */
-@media (max-width: 600px) {
+/* Responsividade */
+@media (max-width: 979px) {
+
+}
+
+@media (max-width: 770px) {
     .headerDashboard {
         flex-direction: column;
         gap: 20px;
@@ -276,9 +292,9 @@
         width: 100%;
         justify-content: end;
     }
-    
-    .grid {
-        grid-template-columns: 1fr;
+
+    .btnAction {
+        flex-grow: 1;
     }
 
     .btnClose {
@@ -288,50 +304,36 @@
     }
 }
 
+@media (max-width: 600px) {    
+    .grid {
+        grid-template-columns: 1fr;
+    }
 
-/* Responsividade provavelmente gerda por IA.
-   Inutil e apenas quebra o layout */
+    .chatCard {
+        height: 550px;
+    }
+}
 
-/* =========================================
-   RESPONSIVIDADE - CELULARES E TABLETS
-   ========================================= */
-/* @media (max-width: 768px) { */
-    /* 1. O painel principal ocupa 100% da tela */
-    /* .dashboard {
-        width: 100% !important;
-        padding: 15px;
-        box-sizing: border-box;
-    } */
-
-    /* 2. O cabeçalho empilha o título e o botão de fechar */
-    /* .headerDashboard {
+@media (max-width: 581px) {
+    .actionsBox {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    } */
+        align-items: end;
+    }
 
-    /* 3. Coloca o botão de fechar no canto superior direito */
-    /* .actionsBox {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-    } */
-
-    /* 4. O mais importante: Transforma o grid de colunas em 1 coluna só (ou 2) */
-    /* .grid {
-        display: grid;
-        grid-template-columns: 1fr !important; 
-        gap: 15px;
+    .btnAction {
         width: 100%;
-    } */
+    }
 
-    /* .card {
-        width: 100%;
-        margin: 0;
-    } */
+    .btnClose {
+        position: relative;
+        bottom: 236px;
+        margin-top: -42px;
+        margin-left: 0;
+    }
+}
 
-    /* Diminui um pouco o título para caber melhor */
-    /* .titulo {
-        font-size: 1.5rem;
-    } */
-/* } */ 
+@media (max-width: 375px) {
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+    }
+}

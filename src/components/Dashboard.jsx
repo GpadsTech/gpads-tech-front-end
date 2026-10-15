@@ -1,4 +1,5 @@
 import Gauge from './Gauge.jsx'
+import Chatbot from './Chatbot.jsx'
 import styles from './Dashboard.module.css'
 import { useEffect, useState } from 'react'
 import { getIdToken } from '../auth.js'
@@ -113,6 +114,7 @@ function Dashboard({ equipamento, onFechar }) {
     const [leitura, setLeitura] = useState(null)
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState(null)
+    const [chatAberto, setChatAberto] = useState(false)
     const dataHoraLeitura = formatarDataHora(leitura?.hora)
     const [leituras, setLeituras] = useState([])
     const [statusDados, setStatusDados] = useState('carregando')
@@ -250,8 +252,17 @@ function Dashboard({ equipamento, onFechar }) {
                 </div>
 
                 <div className={styles.actionsBox}>
+                    <button className={styles.btnAction}
+                        onClick={() => setChatAberto(aberto => !aberto)}
+                        title="Abrir chatbot"
+                        aria-label="Abrir chatbot">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                        Morhinga Chatbot
+                    </button>
                     {/* Botão adicionado "Gerar Relatório" */}
-                    <Link className={styles.btnAction}>
+                    <button className={styles.btnAction}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
                             <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
@@ -259,7 +270,7 @@ function Dashboard({ equipamento, onFechar }) {
                             <line x1="9" y1="16" x2="13" y2="16" />
                         </svg>
                         Gerar Relatório
-                    </Link>
+                    </button>
                     <Link to={`/historico/${equipamento.identificador}`} className={styles.btnAction}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="12 8 12 12 14 14" />
@@ -293,6 +304,12 @@ function Dashboard({ equipamento, onFechar }) {
             {/* Grid de Cards - Estação */}
             {!carregando && !erro && leitura && !isBoia && (
                 <div className={styles.grid}>
+
+                    {chatAberto && (
+                        <div className={styles.chatCard}>
+                            <Chatbot />
+                        </div>
+                    )}
                     
                     <div className={styles.card}>
                         <p className={styles.cardInfoTitle}>Última leitura</p>
