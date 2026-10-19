@@ -77,6 +77,24 @@ export default function Chatbot() {
   }
 };
 
+  // Perfumaria para o textarea/input
+  const handleInput = (e) => {
+    const textarea = e.target;
+    // Reseta a altura para recalcular corretamente caso o usuário apague texto
+    textarea.style.height = 'auto'; 
+    // Define a nova altura com base no conteúdo total digitado
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  };
+
+  // Também perfumaria para o textarea/input
+  const handleKeyDown = (e) => {
+      // Se a tecla pressionada for 'Enter' E a tecla Shift NÃO estiver pressionada
+      if (e.key === 'Enter' && !e.shiftKey) {
+        handleSendMessage(e); // Dispara a ação de envio
+    }
+    // Nota: Se o usuário apertar Shift + Enter, ele vai quebrar a linha normalmente!
+  };
+
   // Ação: Exportar CSV
   const handleExport = () => {
     exportHistoryToCSV(messages);
@@ -86,8 +104,8 @@ export default function Chatbot() {
     <div className={styles.chatbot}>
       <header className={styles.header}>
         <div>
-          <h3 className={styles.headerTitle}>Assistente Morhinga</h3>
-          <p className={styles.headerSub}>Suporte a Decisão & Telemetria</p>
+          <h2 className={styles.headerTitle}>Assistente Morhinga</h2>
+          {/* <p className={styles.headerSub}>Suporte a Decisão & Telemetria</p> */}
         </div>
         <div className={styles.actions}>
           <button
@@ -103,11 +121,11 @@ export default function Chatbot() {
         </div>
       </header>
       {reportStatus !== 'idle' && (
-  <div className={`${styles.status} ${styles[`status_${reportStatus}`]}`}>
-    {reportStatus === 'loading' && 'Gerando relatório...'}
-    {reportStatus === 'success' && 'Relatório gerado!'}
-    {reportStatus === 'error' && 'Erro ao gerar relatório.'}
-  </div>
+      <div className={`${styles.status} ${styles[`status_${reportStatus}`]}`}>
+        {reportStatus === 'loading' && 'Gerando relatório...'}
+        {reportStatus === 'success' && 'Relatório gerado!'}
+        {reportStatus === 'error' && 'Erro ao gerar relatório.'}
+    </div>
 )}
 
       <div className={styles.messages}>
@@ -121,11 +139,12 @@ export default function Chatbot() {
                 msg.sender === 'user' ? styles.bubbleUser : styles.bubbleBot
               } ${msg.isReport ? styles.bubbleReport : ''}`}
             >
-{msg.report ? (
-  <RelatorioVisual dados={msg.report} />
-) : (
-  <p className={styles.text}>{msg.text}</p>
-)}              <span className={styles.time}>{msg.timestamp}</span>
+            {msg.report ? (
+              <RelatorioVisual dados={msg.report} />
+            ) : (
+              <p className={styles.text}>{msg.text}</p>
+            )}              
+            <span className={styles.time}>{msg.timestamp}</span>
             </div>
           </div>
         ))}
@@ -133,18 +152,29 @@ export default function Chatbot() {
         {isLoading && <div className={styles.loading}>Morhinga digitando...</div>}
       </div>
 
-      <form onSubmit={handleSendMessage} className={styles.form}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Pergunte ao assistente..."
-          className={styles.input}
-        />
-        <button type="submit" disabled={isLoading} className={styles.btnSend}>
-          Enviar
-        </button>
-      </form>
+      <div className={styles.divForm}>
+        <form onSubmit={handleSendMessage} className={styles.form}>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Pergunte ao assistente..."
+            className={styles.input}
+            rows={1}
+            onInput={handleInput}
+            onKeyDown={handleKeyDown}
+          ></textarea>
+          <button type="submit" disabled={isLoading} className={styles.btnSend}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {/* Linha vertical (corpo da seta) */}
+                <line x1="12" y1="19" x2="12" y2="5" />
+                {/* Ponta da seta em formato de V invertido */}
+                <polyline points="5 12 12 5 19 12" />
+              </svg>
+            {/* Enviar */}
+          </button>
+        </form>
+      </div>
+
     </div>
   );
 }

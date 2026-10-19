@@ -5,7 +5,7 @@
   width: 360px;
   height: 480px;
   z-index: 2000;
-  background: #030e1e;
+  background: #010409;
   border: 1px solid rgba(0, 229, 255, 0.3);
   border-radius: 12px;
   overflow: hidden; 
@@ -30,7 +30,8 @@
 
 .headerTitle {
   margin: 0;
-  font-size: 14px;
+  /* font-size: 14px; */
+  font-size: 17px;
   font-weight: 700;
   color: #00e5ff;
 }
@@ -68,6 +69,8 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  scrollbar-width: none;
 }
 
 .row {
@@ -85,21 +88,21 @@
 .bubble {
   max-width: 85%;
   padding: 8px 12px;
-  border-radius: 14px;
+  border-radius: 10px;
   font-size: 12px;
   line-height: 1.5;
 }
 
 .bubbleUser {
-  background: #00b9d6;
+  background: #0196ad;
   color: #021423;
-  border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 3px;
 }
 
 .bubbleBot {
   background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(0, 229, 255, 0.25);
-  border-bottom-left-radius: 4px;
+  border: 2px solid rgba(0, 229, 255, 0.25);
+  border-bottom-left-radius: 3px;
 }
 
 .bubbleReport {
@@ -127,37 +130,70 @@
   color: rgba(255, 255, 255, 0.5);
 }
 
+.divForm {
+  /* padding: 10px; */
+  margin: 10px 17px 17px;
+}
+
 .form {
   display: flex;
-  gap: 8px;
-  padding: 10px;
-  border-top: 1px solid rgba(0, 229, 255, 0.3);
+  gap: 9px;
+  padding: 8px 10px;
+  background-color: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 30px;
+  align-items: center;
+  /* justify-content: center; */
+  /* padding: 10px; */
+  /* border-top: 1px solid rgba(0, 229, 255, 0.3); */
 }
 
 .input {
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 13px;
   flex: 1;
-  padding: 8px 10px;
-  font-size: 12px;
+  margin-left: 5px;
+  /* padding: 11px 15px; */
+  height: fit-content;
   color: #fff;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(0, 229, 255, 0.3);
-  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0);
+  /* border: 1px solid rgba(0, 229, 255, 0.3); */
+  /* border-radius: 25px; */
   outline: none;
+  border: none;
+  resize: none;
+  overflow: hidden;
 }
 
-.input:focus {
+/* .input:focus {
   border-color: #00e5ff;
-}
+}  */
 
 .btnSend {
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 600;
+  /* padding: 8px; */
+  min-width: 26px;
+  min-height: 26px;
+  /* font-size: 12px; */
+  /* font-weight: 600; */
   color: #021423;
   background: #00e5ff;
   border: none;
-  border-radius: 8px;
+  border-radius: 50px;
   cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btnSend svg {
+  width: 20px;
+  height: 20px;
+}
+
+.btnSend:hover {
+  background-color: #00e5ffc2;
+}
+
+.btnSend:active {
+  background-color: #00e5ff94;
 }
 
 .btnSend:disabled {

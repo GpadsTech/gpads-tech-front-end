@@ -345,6 +345,13 @@ function Dashboard({ equipamento, onFechar }) {
             {/* Grid de Cards - Boia */}
             {!carregando && !erro && leitura && isBoia && (
                 <div className={styles.grid}>
+
+                    {chatAberto && (
+                        <div className={styles.chatCard}>
+                            <Chatbot />
+                        </div>
+                    )}
+
                     <div className={styles.card}>
                         <p className={styles.cardInfoTitle}>Última leitura</p>
                         {leitura?.hora ? (

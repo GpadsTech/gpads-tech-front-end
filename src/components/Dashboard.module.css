@@ -11,7 +11,7 @@
     -webkit-backdrop-filter: blur(20px);
     
     border: 1.5px solid rgba(0, 217, 235, 0.4);
-    border-radius: 20px;
+    /* border-radius: 20px; */
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
     
     /* Caso ele abra como overlay flutuante */
@@ -85,13 +85,9 @@
 .actionsBox {
     display: flex;
     gap: 12px;
+    margin-top: 5px;
 }
 
-/* Como os botões Gerar Relatório e Histórico usam o mesmo CSS
-    A estilização preferencialmente deve ser geral para todo
-    botão de ação novo para manter uma mesma estética */
-
-/*.btnHistorico */
 .btnAction {
     display: flex;
     align-items: center;
@@ -109,13 +105,11 @@
     transition: all 0.2s ease;
 }
 
-/*.btnHistorico */
 .btnAction svg {
     width: 18px;
     height: 18px;
 }
 
-/*.btnHistorico:hover */
 .btnAction:hover {
     background: rgba(0, 217, 235, 0.2);
     box-shadow: 0 0 15px rgba(0, 217, 235, 0.3);

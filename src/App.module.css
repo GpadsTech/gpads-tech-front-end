@@ -1,6 +1,6 @@
 .container {
   display: flex;
-  height: calc(100vh - 70px);
+  height: calc(100vh - 78px);
 }
 
 .mapa {
@@ -11,6 +11,31 @@
   width: 1200px;
   overflow-y: auto;
   background: white;
+
+  /* scrollbar-width: none; */
+}
+
+/* Estilização da barra de rolagem */
+.dashboard::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dashboard::-webkit-scrollbar-track {
+    background: #18181b;
+}
+
+.dashboard::-webkit-scrollbar-thumb {
+    background-color: #71717a;
+    border-radius: 999px;
+    border: 2px solid #18181b;
+}
+
+.dashboard::-webkit-scrollbar-thumb:hover {
+    background-color: #a1a1aa;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 /* 🔥 ÚNICO fix seguro */
