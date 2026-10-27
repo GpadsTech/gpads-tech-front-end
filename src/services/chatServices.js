@@ -1,4 +1,7 @@
 // Versão MOCK: sem back-end. Troque o conteúdo de sendChatMessage por um fetch quando a API existir.
+import { getIdToken } from "../auth.js"
+
+const API_URL = "http://127.0.0.1:8000"
 
 const respostasMock = {
   temperatura: "A temperatura atual da estação está em 24,2 °C (dado mockado).",
@@ -7,6 +10,29 @@ const respostasMock = {
   status: "Todos os equipamentos estão operando normalmente (dado mockado).",
 };
 
+export async function sendChatMessage(equipamentoId, pergunta) {
+  const token = await getIdToken()
+
+  const response = await fetch(
+    `${API_URL}/api/equipamentos/${equipamentoId}/chatbot/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ pergunta }),
+    }
+  )
+
+  const data = await response.json().catch(() => ({}))
+
+  if (!response.ok) {
+    throw new Error(data.message || "Erro ao consultar o chatbot.")
+  }
+
+  return { reply: data.answer }
+}
 export async function sendChatMessage(mensagem) {
   await new Promise((resolve) => setTimeout(resolve, 800)); // simula a espera da API
 
@@ -64,5 +90,56 @@ export async function getReportData() {
       { dia: "Sáb", mm: 7 },
       { dia: "Dom", mm: 1 },
     ],
-  };
+  };}
+  async function baixarArquivo(url, options, nomePadrao) {
+  const token = await getIdToken()
+
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...(options?.headers || {}),
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.message || "Não foi possível gerar o arquivo.")
+  }
+
+  const disposition = response.headers.get("Content-Disposition") || ""
+  const match = disposition.match(/filename="?([^"]+)"?/)
+  const nome = match ? match[1] : nomePadrao
+
+  const blob = await response.blob()
+  const link = document.createElement("a")
+  const blobUrl = URL.createObjectURL(blob)
+  link.href = blobUrl
+  link.download = nome
+  link.click()
+  URL.revokeObjectURL(blobUrl)
+}
+
+export async function baixarHistoricoCSV(equipamentoId, inicio, fim) {
+  const params = new URLSearchParams()
+  if (inicio) params.set("inicio", inicio)
+  if (fim) params.set("fim", fim)
+
+  return baixarArquivo(
+    `${API_URL}/api/equipamentos/${equipamentoId}/historico/csv/?${params}`,
+    { method: "GET" },
+    "historico.csv"
+  )
+}
+
+export async function baixarRelatorioPDF(equipamentoId, inicio, fim) {
+  return baixarArquivo(
+    `${API_URL}/api/equipamentos/${equipamentoId}/relatorio/`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ inicio, fim }),
+    },
+    "relatorio.pdf"
+  )
 }

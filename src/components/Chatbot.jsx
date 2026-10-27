@@ -3,8 +3,8 @@ import styles from './Chatbot.module.css';
 import { sendChatMessage, exportHistoryToCSV, getReportData } from '../services/chatServices';
 import RelatorioVisual from './RelatorioVisual.jsx';
 
-export default function Chatbot() {
-  const [messages, setMessages] = useState([
+export default function Chatbot({ equipamentoId }) {
+    const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'bot',
@@ -35,8 +35,7 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await sendChatMessage(currentInput);
-      console.log("resposta:", response);
+const response = await sendChatMessage(equipamentoId, currentInput);      console.log("resposta:", response);
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
@@ -44,10 +43,17 @@ export default function Chatbot() {
         timestamp: new Date().toLocaleTimeString()
       };
       setMessages((prev) => [...prev, botMsg]);
-    } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
-    } finally {
-      setIsLoading(false);
+    }catch (error) {
+  console.error("Erro ao enviar mensagem:", error);
+  const errorMsg = {
+    id: Date.now() + 2,
+    sender: 'bot',
+    text: error.message || "Não foi possível obter a resposta.",
+    timestamp: new Date().toLocaleTimeString()
+  };
+  setMessages((prev) => [...prev, errorMsg]);
+} finally {
+  setIsLoading(false);
     }
   };
 
@@ -71,10 +77,15 @@ export default function Chatbot() {
     setReportStatus('success');
     setTimeout(() => setReportStatus('idle'), 3000); // some depois de 3s
   } catch (error) {
-    console.error('Erro ao gerar relatório:', error);
-    setReportStatus('error');
-    setTimeout(() => setReportStatus('idle'), 4000);
-  }
+    console.error("Erro ao enviar mensagem:", error);
+  const errorMsg = {
+    id: Date.now() + 2,
+    sender: 'bot',
+    text: error.message || "Não foi possível obter a resposta.",
+    timestamp: new Date().toLocaleTimeString()
+  };
+  setMessages((prev) => [...prev, errorMsg]);
+} finally {
 };
 
   // Ação: Exportar CSV
@@ -147,4 +158,5 @@ export default function Chatbot() {
       </form>
     </div>
   );
+}
 }

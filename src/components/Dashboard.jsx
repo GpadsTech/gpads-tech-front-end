@@ -354,7 +354,7 @@ function Dashboard({ equipamento, onFechar }) {
             )}
                     {chatAberto && (
             <div className={styles.chatPopup}>
-                <Chatbot />
+                <Chatbot equipamentoId={equipamento.identificador} />
             </div>
         )}
     </div>
