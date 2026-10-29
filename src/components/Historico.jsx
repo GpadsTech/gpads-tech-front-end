@@ -2,6 +2,7 @@ import { useState } from "react"
 import styles from './Historico.module.css'
 import { Link, useParams } from 'react-router-dom'
 import { getIdToken } from '../auth.js'
+import { baixarHistoricoCSV } from '../services/chatServices';
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -156,6 +157,23 @@ function Historico() {
         }
     }
 
+    const handleExport = async () => {
+        try {
+          await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal);
+        } catch (error) {
+          console.error("Erro ao exportar CSV:", error);
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: Date.now(),
+              sender: 'bot',
+              text: error.message || "Não foi possível exportar o CSV.",
+              timestamp: new Date().toLocaleTimeString(),
+            },
+          ]);
+        }
+    }
+
     return (
         <div className={styles.pageContainer}>
             <div className={styles.contentWrapper}>
@@ -203,7 +221,10 @@ function Historico() {
                             {carregando ? "Buscando..." : "Pesquisar"}
                         </button>
                         {/* Botão adicionado "Gerar CSV" */}
-                        <button className={styles.btnGerarCSV}>
+                        <button 
+                            onClick={handleExport}
+                            className={styles.btnGerarCSV}
+                        >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                                 <polyline points="14 2 14 8 20 8" />

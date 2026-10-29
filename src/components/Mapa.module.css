@@ -139,7 +139,7 @@
 /* Container de Fundo da Tela */
 .pageContainer {
     width: 100%;
-    height: calc(100vh - 100px); /* Ocupa todo o espaço abaixo do Header */
+    height: calc(100vh - 78px); /* Ocupa todo o espaço abaixo do Header */
     min-height: 500px;
     box-sizing: border-box;
     padding: 10px 24px 20px 24px;
@@ -349,7 +349,7 @@
 }
 
 .popupBtnSecondary:hover {
-    background: rgba(0, 217, 235, 0.18);
+    transform: translateY(-1px);
     border-color: #00e5ff;
 }
 

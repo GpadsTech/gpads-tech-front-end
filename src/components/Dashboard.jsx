@@ -1,6 +1,6 @@
 import Gauge from './Gauge.jsx'
-import Chatbot from './Chatbot.jsx'
 import styles from './Dashboard.module.css'
+import Chatbot from './Chatbot.jsx'
 import { useEffect, useState } from 'react'
 import { getIdToken } from '../auth.js'
 import { Link } from 'react-router-dom'
@@ -8,6 +8,8 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts'
+import { baixarRelatorioPDF } from '../services/chatServices';
+import { createPortal } from 'react-dom'
 
 const API_URL = "https://gpads-api-dados.onrender.com"
 function SensorLineChart({
@@ -118,6 +120,59 @@ function Dashboard({ equipamento, onFechar }) {
     const dataHoraLeitura = formatarDataHora(leitura?.hora)
     const [leituras, setLeituras] = useState([])
     const [statusDados, setStatusDados] = useState('carregando')
+    
+    // Modal
+    const [modalRelatorioAberto, setModalRelatorioAberto] = useState(false);
+    const [inicio, setInicio] = useState('');
+    const [fim, setFim] = useState('');
+    const [carregandoRelatorio, setCarregandoRelatorio] = useState(false);
+    const [erroRelatorio, setErroRelatorio] = useState('');
+
+    const abrirModalRelatorio = () => {
+        setErroRelatorio('');
+        setModalRelatorioAberto(true);
+    };
+
+    const fecharModalRelatorio = () => {
+        if (carregandoRelatorio) return;
+
+        setModalRelatorioAberto(false);
+        setErroRelatorio('');
+    };
+
+    const handleGerarRelatorio = async (e) => {
+        e.preventDefault();
+        setErroRelatorio('');
+
+        if (!inicio || !fim) {
+            setErroRelatorio('Preencha as datas de início e fim.');
+            return;
+        }
+
+        if (inicio > fim) {
+            setErroRelatorio(
+                'A data de início não pode ser posterior à data de fim.'
+            );
+            return;
+        }
+
+        try {
+            setCarregandoRelatorio(true);
+
+            await baixarRelatorioPDF(equipamento.identificador, inicio, fim);
+
+            setModalRelatorioAberto(false);
+        } catch (error) {
+            console.error('Erro ao gerar relatório:', error);
+
+            setErroRelatorio(
+                'Não foi possível gerar o relatório. Tente novamente.'
+            );
+        } finally {
+            setCarregandoRelatorio(false);
+        }
+    };
+    // Fim Modal
 
     useEffect(() => {
         if (!equipamento) return
@@ -262,8 +317,13 @@ function Dashboard({ equipamento, onFechar }) {
                         </svg>
                         Morhinga Chatbot
                     </button>
+
                     {/* Botão adicionado "Gerar Relatório" */}
-                    <button className={styles.btnAction}>
+                    <button
+                        type="button"
+                        onClick={abrirModalRelatorio} 
+                        className={styles.btnAction}
+                    >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
                             <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
@@ -272,6 +332,104 @@ function Dashboard({ equipamento, onFechar }) {
                         </svg>
                         Gerar Relatório
                     </button>
+
+                    {modalRelatorioAberto &&
+                    createPortal(
+                        <div
+                            className={styles.modalRelatorioFundo}
+                            onMouseDown={(e) => {
+                                if (e.target === e.currentTarget) {
+                                    fecharModalRelatorio();
+                                }
+                            }}
+                        >
+                            <section
+                                className={styles.modalRelatorio}
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="titulo-modal-relatorio"
+                            >
+                                <button
+                                    type="button"
+                                    className={styles.modalRelatorioFechar}
+                                    onClick={fecharModalRelatorio}
+                                    disabled={carregandoRelatorio}
+                                    aria-label="Fechar modal"
+                                >
+                                    ×
+                                </button>
+
+                                <h2 id="titulo-modal-relatorio">Gerar relatório PDF</h2>
+                                <p>Selecione o período desejado para o relatório.</p>
+
+                                <form onSubmit={handleGerarRelatorio}>
+                                    <div className={styles.campoRelatorio}>
+                                        <label htmlFor="data-inicio-relatorio">
+                                            Data de início
+                                        </label>
+
+                                        <input
+                                            id="data-inicio-relatorio"
+                                            type="date"
+                                            value={inicio}
+                                            max={fim || undefined}
+                                            onChange={(e) => setInicio(e.target.value)}
+                                            required
+                                            disabled={carregandoRelatorio}
+                                        />
+                                    </div>
+
+                                    <div className={styles.campoRelatorio}>
+                                        <label htmlFor="data-fim-relatorio">
+                                            Data de fim
+                                        </label>
+
+                                        <input
+                                            id="data-fim-relatorio"
+                                            type="date"
+                                            value={fim}
+                                            min={inicio || undefined}
+                                            onChange={(e) => setFim(e.target.value)}
+                                            required
+                                            disabled={carregandoRelatorio}
+                                        />
+                                    </div>
+
+                                    {erroRelatorio && (
+                                        <p
+                                            className={styles.erroRelatorio}
+                                            role="alert"
+                                        >
+                                            {erroRelatorio}
+                                        </p>
+                                    )}
+
+                                    <div className={styles.acoesRelatorio}>
+                                        <button
+                                            type="button"
+                                            className={styles.cancelarRelatorio}
+                                            onClick={fecharModalRelatorio}
+                                            disabled={carregandoRelatorio}
+                                        >
+                                            Cancelar
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            className={styles.confirmarRelatorio}
+                                            disabled={carregandoRelatorio}
+                                        >
+                                            {carregandoRelatorio
+                                                ? 'Gerando PDF...'
+                                                : 'Gerar PDF'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>,
+                        document.body
+                    )}
+
                     <Link to={`/historico/${equipamento.identificador}`} className={styles.btnAction}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="12 8 12 12 14 14" />
@@ -279,6 +437,7 @@ function Dashboard({ equipamento, onFechar }) {
                         </svg>
                         Histórico
                     </Link>
+                    
                     <button onClick={onFechar} className={styles.btnClose} title="Fechar Dashboard">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18" />
@@ -308,7 +467,7 @@ function Dashboard({ equipamento, onFechar }) {
 
                     {chatAberto && (
                         <div className={styles.chatCard}>
-                            <Chatbot />
+                            <Chatbot equipamentoId={equipamento.identificador} />
                         </div>
                     )}
                     
@@ -349,7 +508,7 @@ function Dashboard({ equipamento, onFechar }) {
 
                     {chatAberto && (
                         <div className={styles.chatCard}>
-                            <Chatbot />
+                            <Chatbot equipamentoId={equipamento.identificador} />
                         </div>
                     )}
 

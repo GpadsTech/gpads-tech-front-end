@@ -85,7 +85,6 @@
 .actionsBox {
     display: flex;
     gap: 12px;
-    margin-top: 5px;
 }
 
 .btnAction {
@@ -162,6 +161,7 @@
   overflow: hidden;
   border: 1px solid rgba(0, 195, 255, 0.25);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 10px 20px rgba(0, 0, 0, 0.4);
+  transform: all 0.2s;
 }
 
 /* Estilo do Card Neon */
@@ -276,11 +276,141 @@
     color: rgba(255, 255, 255, 0.6);
 }
 
-/* Responsividade */
-@media (max-width: 979px) {
+/* Modal */
+.modalRelatorioFundo {
+    position: fixed;
+    inset: 0;
+    z-index: 2008;
 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    box-sizing: border-box;
+
+    background: rgba(0, 0, 0, 0.6);
 }
 
+.modalRelatorio {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 28px;
+
+    background: #03101e;
+    color: #ffffff;
+
+    border: 1px solid rgba(0, 217, 235, 0.5);
+    border-radius: 16px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(0, 217, 235, 0.12);
+}
+
+.modalRelatorio h2 {
+    margin: 0 32px 10px 0;
+    color: #00e5ff;
+    font-size: 1.35rem;
+}
+
+.modalRelatorio > p {
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.modalRelatorioFechar {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+
+    border: none;
+    background: transparent;
+    color: #ffffff;
+
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.campoRelatorio {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.campoRelatorio label {
+    color: #d4d4d8;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.campoRelatorio input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 12px;
+
+    border: 1px solid rgba(0, 217, 235, 0.35);
+    border-radius: 8px;
+
+    background: #071b2c;
+    color: #ffffff;
+    color-scheme: dark;
+    font: inherit;
+}
+
+.campoRelatorio input:focus {
+    outline: 2px solid #00e5ff;
+    outline-offset: 2px;
+}
+
+.erroRelatorio {
+    margin-top: 16px;
+    color: #ff7777;
+    font-size: 0.9rem;
+}
+
+.acoesRelatorio {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.cancelarRelatorio,
+.confirmarRelatorio {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancelarRelatorio {
+    border: 1px solid #475569;
+    background: transparent;
+    color: #e2e8f0;
+}
+
+.confirmarRelatorio {
+    border: none;
+    background: #00d9eb;
+    color: #021a24;
+}
+
+.cancelarRelatorio:disabled,
+.confirmarRelatorio:disabled,
+.modalRelatorioFechar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsividade */
 @media (max-width: 770px) {
     .headerDashboard {
         flex-direction: column;
@@ -325,9 +455,23 @@
 
     .btnClose {
         position: relative;
-        bottom: 236px;
+        bottom: 183px;
         margin-top: -42px;
         margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .modalRelatorio {
+        padding: 24px 18px;
+    }
+
+    .acoesRelatorio {
+        flex-direction: column-reverse;
+    }
+
+    .acoesRelatorio button {
+        width: 100%;
     }
 }
 

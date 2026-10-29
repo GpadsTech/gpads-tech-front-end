@@ -18,7 +18,7 @@
 
     /* Removemos a margem inferior que causava a desconexão */
     margin-bottom: 0; 
-    /* z-index: 1000; */
+    z-index: 1000;
     z-index: 10;
 }
 
@@ -238,12 +238,7 @@
 
     .navegacao {
         display: none;
-        /* flex-direction: column; */
     }
-
-    /* .navBtn {
-        display: none;
-    } */
 
     .menuBtn {
         display: block;
@@ -252,27 +247,6 @@
     .nomeUsuario, .emailUsuario {
         display: inline-block;
     }
-
-    /* .usuario {
-        flex-direction: column;
-    } */
-
-    /* .nomeUsuario, .emailUsuario {
-        display: inline-block;
-    } */
-
-    /* .navBtn span {
-        display: none;
-    }
-
-    .activeBtn span {
-        display: inline-block;
-    } */
-
-    /* Exibe o texto de todos os botões de navegação caso não haja um ativo */
-    /* .navegacao:not(:has(.activeBtn)) + .brand span {
-        display: inline-block;
-    } */
 }
 
 @media (max-width: 547px) {
@@ -282,7 +256,7 @@
         align-items: center;
         text-align: center;
         gap: 14px;
-            padding: 16px 0px;
+        padding: 16px 0px;
     }
 
     .usuario {

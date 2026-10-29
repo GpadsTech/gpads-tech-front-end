@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styles from './Chatbot.module.css';
-import { sendChatMessage, exportHistoryToCSV, getReportData } from '../services/chatServices';
+import { sendChatMessage, baixarHistoricoCSV, getReportData } from '../services/chatServices';
 import RelatorioVisual from './RelatorioVisual.jsx';
 
-export default function Chatbot() {
+export default function Chatbot({ equipamentoId }) {
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -14,7 +14,6 @@ export default function Chatbot() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
   const [reportStatus, setReportStatus] = useState('idle');
 
   // Enviar mensagem
@@ -35,8 +34,7 @@ export default function Chatbot() {
     setIsLoading(true);
 
     try {
-      const response = await sendChatMessage(currentInput);
-      console.log("resposta:", response);
+      const response = await sendChatMessage(equipamentoId, currentInput);
       const botMsg = {
         id: Date.now() + 1,
         sender: 'bot',
@@ -46,36 +44,17 @@ export default function Chatbot() {
       setMessages((prev) => [...prev, botMsg]);
     } catch (error) {
       console.error("Erro ao enviar mensagem:", error);
+      const errorMsg = {
+        id: Date.now() + 2,
+        sender: 'bot',
+        text: error.message || "Não foi possível obter a resposta.",
+        timestamp: new Date().toLocaleTimeString()
+      };
+      setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleGenerateReport = async () => {
-  if (reportStatus === 'loading') return; // evita clique duplo
-  setReportStatus('loading');
-
-  try {
-    const report = await getReportData();
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        sender: 'bot',
-        isReport: true,
-        report,
-        text: 'Relatório Executivo gerado.',
-        timestamp: new Date().toLocaleTimeString(),
-      },
-    ]);
-    setReportStatus('success');
-    setTimeout(() => setReportStatus('idle'), 3000); // some depois de 3s
-  } catch (error) {
-    console.error('Erro ao gerar relatório:', error);
-    setReportStatus('error');
-    setTimeout(() => setReportStatus('idle'), 4000);
-  }
-};
+  };   
 
   // Perfumaria para o textarea/input
   const handleInput = (e) => {
@@ -95,38 +74,13 @@ export default function Chatbot() {
     // Nota: Se o usuário apertar Shift + Enter, ele vai quebrar a linha normalmente!
   };
 
-  // Ação: Exportar CSV
-  const handleExport = () => {
-    exportHistoryToCSV(messages);
-  };
-
     return (
     <div className={styles.chatbot}>
       <header className={styles.header}>
         <div>
           <h2 className={styles.headerTitle}>Assistente Morhinga</h2>
-          {/* <p className={styles.headerSub}>Suporte a Decisão & Telemetria</p> */}
-        </div>
-        <div className={styles.actions}>
-          <button
-           onClick={handleGenerateReport}
-           disabled={reportStatus === 'loading'}
-           className={styles.btnAction}
-           >
-            {reportStatus === 'loading' ? '⏳ Gerando...' : '📊 Relatório'}
-          </button>
-          <button onClick={handleExport} className={styles.btnAction}>
-            📥 CSV
-          </button>
         </div>
       </header>
-      {reportStatus !== 'idle' && (
-      <div className={`${styles.status} ${styles[`status_${reportStatus}`]}`}>
-        {reportStatus === 'loading' && 'Gerando relatório...'}
-        {reportStatus === 'success' && 'Relatório gerado!'}
-        {reportStatus === 'error' && 'Erro ao gerar relatório.'}
-    </div>
-)}
 
       <div className={styles.messages}>
         {messages.map((msg) => (
@@ -170,7 +124,6 @@ export default function Chatbot() {
                 {/* Ponta da seta em formato de V invertido */}
                 <polyline points="5 12 12 5 19 12" />
               </svg>
-            {/* Enviar */}
           </button>
         </form>
       </div>

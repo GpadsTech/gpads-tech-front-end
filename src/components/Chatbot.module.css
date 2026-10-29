@@ -4,7 +4,7 @@
   right: 24px;
   width: 360px;
   height: 480px;
-  z-index: 2000;
+  z-index: 1500;
   background: #010409;
   border: 1px solid rgba(0, 229, 255, 0.3);
   border-radius: 12px;
@@ -30,36 +30,9 @@
 
 .headerTitle {
   margin: 0;
-  /* font-size: 14px; */
   font-size: 17px;
   font-weight: 700;
   color: #00e5ff;
-}
-
-.headerSub {
-  margin: 2px 0 0;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.5);
-}
-
-.actions {
-  display: flex;
-  gap: 6px;
-}
-
-.btnAction {
-  font-size: 11px;
-  padding: 6px 8px;
-  background: rgba(0, 229, 255, 0.08);
-  border: 1px solid rgba(0, 229, 255, 0.5);
-  border-radius: 8px;
-  color: #00e5ff;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btnAction:hover {
-  background: rgba(0, 229, 255, 0.18);
 }
 
 .messages {
@@ -131,7 +104,6 @@
 }
 
 .divForm {
-  /* padding: 10px; */
   margin: 10px 17px 17px;
 }
 
@@ -143,9 +115,6 @@
   border: 1px solid rgba(0, 229, 255, 0.3);
   border-radius: 30px;
   align-items: center;
-  /* justify-content: center; */
-  /* padding: 10px; */
-  /* border-top: 1px solid rgba(0, 229, 255, 0.3); */
 }
 
 .input {
@@ -153,28 +122,18 @@
   font-size: 13px;
   flex: 1;
   margin-left: 5px;
-  /* padding: 11px 15px; */
   height: fit-content;
   color: #fff;
   background-color: rgba(255, 255, 255, 0);
-  /* border: 1px solid rgba(0, 229, 255, 0.3); */
-  /* border-radius: 25px; */
   outline: none;
   border: none;
   resize: none;
   overflow: hidden;
 }
 
-/* .input:focus {
-  border-color: #00e5ff;
-}  */
-
 .btnSend {
-  /* padding: 8px; */
   min-width: 26px;
   min-height: 26px;
-  /* font-size: 12px; */
-  /* font-weight: 600; */
   color: #021423;
   background: #00e5ff;
   border: none;
