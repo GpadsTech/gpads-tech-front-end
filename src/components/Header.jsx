@@ -1,7 +1,7 @@
 import styles from './Header.module.css'
 import MenuBtn from './MenuBtn.jsx'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../AuthContext.jsx'
+import { useAuth } from '../hooks/useAuth.js'
 import { logout } from '../auth.js'
 
 // Importe a logo aqui (ajuste o caminho se necessário)

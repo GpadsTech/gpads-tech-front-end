@@ -1,60 +1,9 @@
-import React, { useState } from 'react';
+import { useChat } from '../hooks/useChat.js';
 import styles from './Chatbot.module.css';
-import { sendChatMessage, baixarHistoricoCSV, getReportData } from '../services/chatServices';
 import RelatorioVisual from './RelatorioVisual.jsx';
 
 export default function Chatbot({ equipamentoId }) {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'bot',
-      text: 'Olá! Sou o assistente do Dashboard Morhinga. Como posso ajudar?',
-      timestamp: new Date().toLocaleTimeString()
-    }
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [reportStatus, setReportStatus] = useState('idle');
-
-  // Enviar mensagem
-  const handleSendMessage = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    const userMsg = {
-      id: Date.now(),
-      sender: 'user',
-      text: input,
-      timestamp: new Date().toLocaleTimeString()
-    };
-
-    setMessages((prev) => [...prev, userMsg]);
-    const currentInput = input;
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const response = await sendChatMessage(equipamentoId, currentInput);
-      const botMsg = {
-        id: Date.now() + 1,
-        sender: 'bot',
-        text: response.reply,
-        timestamp: new Date().toLocaleTimeString()
-      };
-      setMessages((prev) => [...prev, botMsg]);
-    } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
-      const errorMsg = {
-        id: Date.now() + 2,
-        sender: 'bot',
-        text: error.message || "Não foi possível obter a resposta.",
-        timestamp: new Date().toLocaleTimeString()
-      };
-      setMessages((prev) => [...prev, errorMsg]);
-    } finally {
-      setIsLoading(false);
-    }
-  };   
+  const { messages, input, setInput, isLoading, handleSendMessage } = useChat(equipamentoId);
 
   // Perfumaria para o textarea/input
   const handleInput = (e) => {

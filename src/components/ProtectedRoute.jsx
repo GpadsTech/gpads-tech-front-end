@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom"
-import { useAuth } from "../AuthContext.jsx"
+import { useAuth } from "../hooks/useAuth.js"
 
 function ProtectedRoute() {
 

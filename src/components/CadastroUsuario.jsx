@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useAuth } from "../AuthContext.jsx"
+import { useAuth } from "../hooks/useAuth.js"
 import { useNavigate } from "react-router-dom"
 import { cadastrarUsuario } from "../services/api.js"
 import styles from "./CadastroUsuario.module.css"

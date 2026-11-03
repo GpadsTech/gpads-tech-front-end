@@ -1,7 +1,7 @@
+import { getEquipmentHistory } from "../services/telemetryService.js"
 import { useState } from "react"
 import styles from './Historico.module.css'
 import { Link, useParams } from 'react-router-dom'
-import { getIdToken } from '../auth.js'
 import { baixarHistoricoCSV } from '../services/chatServices';
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
@@ -12,7 +12,6 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts'
-
 
 const customNeonMarker = L.divIcon({
     className: 'custom-neon-pin',
@@ -129,21 +128,12 @@ function Historico() {
         setCarregando(true)
         setErro('')
         try {
-            const token = await getIdToken()
+
             const parametros = new URLSearchParams()
             if (dataInicio) parametros.append('inicio', dataInicio)
             if (dataFinal) parametros.append('fim', dataFinal)
 
-            const queryString = parametros.toString()
-            const url = `https://gpads-api-dados.onrender.com/api/equipamentos/${identifier}/historico/` + (queryString ? `?${queryString}` : '')
-
-            const response = await fetch(url, {
-                method: "GET",
-                headers: { Authorization: `Bearer ${token}` },
-            })
-
-            const data = await response.json()
-            if (!response.ok) throw new Error(data.message || "Erro ao buscar histórico.")
+            const data = await getEquipmentHistory(identifier, parametros)
 
             setEquipamento(data.equipamento)
             setDados(data.dados)
@@ -162,15 +152,7 @@ function Historico() {
           await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal);
         } catch (error) {
           console.error("Erro ao exportar CSV:", error);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: Date.now(),
-              sender: 'bot',
-              text: error.message || "Não foi possível exportar o CSV.",
-              timestamp: new Date().toLocaleTimeString(),
-            },
-          ]);
+          setErro(error.message || "Não foi possível exportar o CSV.");
         }
     }
 

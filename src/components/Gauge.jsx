@@ -5,7 +5,6 @@ function Gauge({ titulo, valor, min, max, cor, unidade})
 {
     //sempre preenche metade do arco
     const percentual = (valor - min) / (max - min) * 100
-    console.log('Gauge aplicado')
     return(
         <div>
             <p style={{ 
@@ -54,7 +53,6 @@ function Gauge({ titulo, valor, min, max, cor, unidade})
             <span style={{ position: 'absolute', bottom: 80, left: 5, fontSize: '0.75rem', color: '#999' }}>{min}</span>
             <span style={{ position: 'absolute', bottom: 80, right: 5, fontSize: '0.75rem', color: '#999' }}>{max}</span>
         </div>
-
 
         </div>
 

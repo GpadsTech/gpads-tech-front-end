@@ -1,3 +1,4 @@
+import { getEquipmentData } from "../services/telemetryService.js"
 import Gauge from './Gauge.jsx'
 import styles from './Dashboard.module.css'
 import { useEffect, useState } from 'react'
@@ -5,8 +6,6 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts'
-
-const API_URL = "https://gpads-api-dados.onrender.com"
 
 function SensorLineChart({ titulo, dados, campo, unidade, cor, dominio = [0, 100], formatarY }) {
     const historico = dados
@@ -66,13 +65,7 @@ function DashboardPublico({ equipamento, onFechar }) {
                 setErro(null)
                 setStatusDados('carregando')
 
-                // AQUI FOI CORRIGIDO: Adicionado o /publicos/ na URL
-                const response = await fetch(`${API_URL}/api/equipamentos/${equipamento.identificador}/dados/publicos/`, {
-                    method: "GET"
-                })
-
-                const data = await response.json()
-                if (!response.ok) throw new Error(data.message || "Não foi possível carregar os dados do equipamento.")
+                const data = await getEquipmentData(equipamento.identificador, { publicAccess: true })
 
                 const dados = data.dados || {}
                 const leiturasRecebidas = Object.values(dados)

@@ -1,8 +1,8 @@
+import { getEquipmentData } from "../services/telemetryService.js"
 import Gauge from './Gauge.jsx'
 import styles from './Dashboard.module.css'
 import Chatbot from './Chatbot.jsx'
 import { useEffect, useState } from 'react'
-import { getIdToken } from '../auth.js'
 import { Link } from 'react-router-dom'
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -11,7 +11,6 @@ import {
 import { baixarRelatorioPDF } from '../services/chatServices';
 import { createPortal } from 'react-dom'
 
-const API_URL = "https://gpads-api-dados.onrender.com"
 function SensorLineChart({
     titulo,
     dados,
@@ -183,20 +182,7 @@ function Dashboard({ equipamento, onFechar }) {
                 setErro(null)
                 setStatusDados('carregando')
 
-                const token = await getIdToken()
-                const response = await fetch(
-                    `${API_URL}/api/equipamentos/${equipamento.identificador}/dados/`,
-                    {
-                        method: "GET",
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                )
-
-                const data = await response.json()
-
-                if (!response.ok) {
-                    throw new Error(data.message || "Não foi possível carregar os dados do equipamento.")
-                }
+                const data = await getEquipmentData(equipamento.identificador)
 
                 const dados = data.dados || {}
                 const leiturasRecebidas = Object.values(dados)
@@ -266,13 +252,13 @@ function Dashboard({ equipamento, onFechar }) {
     const valorPressao = leitura?.["pressão"] ?? leitura?.pressao ?? 0
     const valorRpm = leitura?.rpm ?? 0
     const valorVento = leitura?.vento ?? 0
-    const valorLuz = leitura?.luz ?? 0
+
 
     const valorPh = leitura?.ph ?? 0
     const valorTurbidez = leitura?.turbidez_ntu ?? 0
     const valorSensorUV = leitura?.sensor_uv_v ?? 0
     const valorAdc = leitura?.adc ?? 0
-    const valorTensao = leitura?.tensao_v ?? 0
+
 
     return (
         <div className={styles.dashboard}>
@@ -521,7 +507,6 @@ function Dashboard({ equipamento, onFechar }) {
                             </>
                         ) : (<p className={styles.cardInfoData}>—</p>)}
                     </div>
-
 
                     <div className={styles.card}><Gauge titulo="pH" valor={valorPh} min={0} max={14} cor="#00e5ff" unidade="pH" /></div>
                     <div className={styles.card}><Gauge titulo="Turbidez" valor={valorTurbidez} min={0} max={100} cor="#557db4" unidade="V" /></div>
