@@ -23,7 +23,7 @@
 .formCard {
     width: 100%;
     max-width: 850px;
-    margin-top: 20px;
+    margin-top: 10px;
     padding: 36px 44px;
     
     background: rgba(3, 14, 30, 0.7);
@@ -285,5 +285,9 @@
     
     .titulo {
         font-size: 1.4rem;
+    }
+
+    .iconWrapper {
+        margin-right: 1px;
     }
 }

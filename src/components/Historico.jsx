@@ -1,7 +1,8 @@
+import { getEquipmentHistory } from "../services/telemetryService.js"
 import { useState } from "react"
 import styles from './Historico.module.css'
 import { Link, useParams } from 'react-router-dom'
-import { getIdToken } from '../auth.js'
+import { baixarHistoricoCSV } from '../services/chatServices';
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -11,7 +12,6 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts'
-
 
 const customNeonMarker = L.divIcon({
     className: 'custom-neon-pin',
@@ -128,21 +128,12 @@ function Historico() {
         setCarregando(true)
         setErro('')
         try {
-            const token = await getIdToken()
+
             const parametros = new URLSearchParams()
             if (dataInicio) parametros.append('inicio', dataInicio)
             if (dataFinal) parametros.append('fim', dataFinal)
 
-            const queryString = parametros.toString()
-            const url = `https://gpads-api-dados.onrender.com/api/equipamentos/${identifier}/historico/` + (queryString ? `?${queryString}` : '')
-
-            const response = await fetch(url, {
-                method: "GET",
-                headers: { Authorization: `Bearer ${token}` },
-            })
-
-            const data = await response.json()
-            if (!response.ok) throw new Error(data.message || "Erro ao buscar histórico.")
+            const data = await getEquipmentHistory(identifier, parametros)
 
             setEquipamento(data.equipamento)
             setDados(data.dados)
@@ -153,6 +144,15 @@ function Historico() {
             setEquipamento(null)
         } finally {
             setCarregando(false)
+        }
+    }
+
+    const handleExport = async () => {
+        try {
+          await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal);
+        } catch (error) {
+          console.error("Erro ao exportar CSV:", error);
+          setErro(error.message || "Não foi possível exportar o CSV.");
         }
     }
 
@@ -194,13 +194,28 @@ function Historico() {
                             />
                         </div>
                     </div>
-                    <button className={styles.btnPesquisar} onClick={pesquisar} disabled={carregando}>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="11" cy="11" r="8" />
-                            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                        </svg>
-                        {carregando ? "Buscando..." : "Pesquisar"}
-                    </button>
+                    <div className={styles.searchAndCSV}>
+                        <button className={styles.btnPesquisar} onClick={pesquisar} disabled={carregando}>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            {carregando ? "Buscando..." : "Pesquisar"}
+                        </button>
+                        {/* Botão adicionado "Gerar CSV" */}
+                        <button 
+                            onClick={handleExport}
+                            className={styles.btnGerarCSV}
+                        >
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                                <line x1="8" y1="13" x2="16" y2="13" />
+                                <line x1="8" y1="17" x2="16" y2="17" />
+                            </svg>
+                            Gerar CSV
+                        </button>
+                    </div>
                 </div>
 
                 {/* Alertas */}

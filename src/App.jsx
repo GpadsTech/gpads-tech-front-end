@@ -20,7 +20,6 @@ import {
 import { useState } from 'react'
 import { AuthProvider } from './AuthContext.jsx'
 
-
 function PaginaPrincipal() {
     const [equipamentoSelecionado, setEquipamentoSelecionado] = useState(null)
 
@@ -50,7 +49,6 @@ function PaginaPrincipal() {
     )
 }
 
-
 function LayoutProtegido() {
 
     return (
@@ -61,7 +59,6 @@ function LayoutProtegido() {
         </>
     )
 }
-
 
 function App() {
 
@@ -79,7 +76,6 @@ function App() {
                         path="/login"
                         element={<Login />}
                     />
-
 
                     <Route
                         path="/estacoes"

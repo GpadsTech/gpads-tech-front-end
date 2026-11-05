@@ -11,7 +11,7 @@
     -webkit-backdrop-filter: blur(20px);
     
     border: 1.5px solid rgba(0, 217, 235, 0.4);
-    border-radius: 20px;
+    /* border-radius: 20px; */
     box-shadow: 0 15px 50px rgba(0, 0, 0, 0.7);
     
     /* Caso ele abra como overlay flutuante */
@@ -25,6 +25,7 @@
 
 /* Header do Dashboard */
 .headerDashboard {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -80,15 +81,16 @@
     display: inline-block;
 }
 
-/* Botões do Topo (Histórico e Fechar) */
+/* Botões do Topo (Gerar Relatório, Histórico e Fechar) */
 .actionsBox {
     display: flex;
     gap: 12px;
 }
 
-.btnHistorico {
+.btnAction {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 0 20px;
     height: 42px;
@@ -102,12 +104,17 @@
     transition: all 0.2s ease;
 }
 
-.btnHistorico svg {
+.btnAction svg {
     width: 18px;
     height: 18px;
 }
 
-.btnHistorico:hover {
+.btnAction:hover {
+    background: rgba(0, 217, 235, 0.2);
+    box-shadow: 0 0 15px rgba(0, 217, 235, 0.3);
+}
+
+.chatbotActive {
     background: rgba(0, 217, 235, 0.2);
     box-shadow: 0 0 15px rgba(0, 217, 235, 0.3);
 }
@@ -143,6 +150,18 @@
     /* Usa auto-fit para se adaptar a diferentes tamanhos de tela */
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
+}
+
+/* Chatbot Card */
+.chatCard {
+  grid-column: 1 / -1;
+  height: 500px;
+  background: #030e1e;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 195, 255, 0.25);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05), 0 10px 20px rgba(0, 0, 0, 0.4);
+  transform: all 0.2s;
 }
 
 /* Estilo do Card Neon */
@@ -257,8 +276,142 @@
     color: rgba(255, 255, 255, 0.6);
 }
 
+/* Modal */
+.modalRelatorioFundo {
+    position: fixed;
+    inset: 0;
+    z-index: 2008;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+    box-sizing: border-box;
+
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.modalRelatorio {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    box-sizing: border-box;
+    padding: 28px;
+
+    background: #03101e;
+    color: #ffffff;
+
+    border: 1px solid rgba(0, 217, 235, 0.5);
+    border-radius: 16px;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(0, 217, 235, 0.12);
+}
+
+.modalRelatorio h2 {
+    margin: 0 32px 10px 0;
+    color: #00e5ff;
+    font-size: 1.35rem;
+}
+
+.modalRelatorio > p {
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.modalRelatorioFechar {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+
+    border: none;
+    background: transparent;
+    color: #ffffff;
+
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.campoRelatorio {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.campoRelatorio label {
+    color: #d4d4d8;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.campoRelatorio input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 12px;
+
+    border: 1px solid rgba(0, 217, 235, 0.35);
+    border-radius: 8px;
+
+    background: #071b2c;
+    color: #ffffff;
+    color-scheme: dark;
+    font: inherit;
+}
+
+.campoRelatorio input:focus {
+    outline: 2px solid #00e5ff;
+    outline-offset: 2px;
+}
+
+.erroRelatorio {
+    margin-top: 16px;
+    color: #ff7777;
+    font-size: 0.9rem;
+}
+
+.acoesRelatorio {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.cancelarRelatorio,
+.confirmarRelatorio {
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.cancelarRelatorio {
+    border: 1px solid #475569;
+    background: transparent;
+    color: #e2e8f0;
+}
+
+.confirmarRelatorio {
+    border: none;
+    background: #00d9eb;
+    color: #021a24;
+}
+
+.cancelarRelatorio:disabled,
+.confirmarRelatorio:disabled,
+.modalRelatorioFechar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* Responsividade */
-@media (max-width: 600px) {
+@media (max-width: 770px) {
     .headerDashboard {
         flex-direction: column;
         gap: 20px;
@@ -266,56 +419,64 @@
     
     .actionsBox {
         width: 100%;
-        justify-content: space-between;
+        justify-content: end;
     }
-    
-    .grid {
-        grid-template-columns: 1fr;
+
+    .btnAction {
+        flex-grow: 1;
+    }
+
+    .btnClose {
+        position: relative;
+        bottom: 115px;
+        margin-left: -46px;
     }
 }
 
-
-/* =========================================
-   RESPONSIVIDADE - CELULARES E TABLETS
-   ========================================= */
-@media (max-width: 768px) {
-    /* 1. O painel principal ocupa 100% da tela */
-    .dashboard {
-        width: 100% !important;
-        padding: 15px;
-        box-sizing: border-box;
-    }
-
-    /* 2. O cabeçalho empilha o título e o botão de fechar */
-    .headerDashboard {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    /* 3. Coloca o botão de fechar no canto superior direito */
-    .actionsBox {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-    }
-
-    /* 4. O mais importante: Transforma o grid de colunas em 1 coluna só (ou 2) */
+@media (max-width: 600px) {    
     .grid {
-        display: grid;
-        /* Altera para 1 coluna no celular para os gráficos não esmagarem */
-        grid-template-columns: 1fr !important; 
-        gap: 15px;
+        grid-template-columns: 1fr;
+    }
+
+    .chatCard {
+        height: 550px;
+    }
+}
+
+@media (max-width: 581px) {
+    .actionsBox {
+        flex-direction: column;
+        align-items: end;
+    }
+
+    .btnAction {
         width: 100%;
     }
 
-    .card {
-        width: 100%;
-        margin: 0;
+    .btnClose {
+        position: relative;
+        bottom: 183px;
+        margin-top: -42px;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .modalRelatorio {
+        padding: 24px 18px;
     }
 
-    /* Diminui um pouco o título para caber melhor */
-    .titulo {
-        font-size: 1.5rem;
+    .acoesRelatorio {
+        flex-direction: column-reverse;
+    }
+
+    .acoesRelatorio button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 375px) {
+    .grid {
+        grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
     }
 }

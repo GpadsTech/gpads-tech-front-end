@@ -1,14 +1,16 @@
+import { getEquipmentData } from "../services/telemetryService.js"
 import Gauge from './Gauge.jsx'
 import styles from './Dashboard.module.css'
+import Chatbot from './Chatbot.jsx'
 import { useEffect, useState } from 'react'
-import { getIdToken } from '../auth.js'
 import { Link } from 'react-router-dom'
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts'
+import { baixarRelatorioPDF } from '../services/chatServices';
+import { createPortal } from 'react-dom'
 
-const API_URL = "https://gpads-api-dados.onrender.com"
 function SensorLineChart({
     titulo,
     dados,
@@ -113,9 +115,63 @@ function Dashboard({ equipamento, onFechar }) {
     const [leitura, setLeitura] = useState(null)
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState(null)
+    const [chatAberto, setChatAberto] = useState(false)
     const dataHoraLeitura = formatarDataHora(leitura?.hora)
     const [leituras, setLeituras] = useState([])
     const [statusDados, setStatusDados] = useState('carregando')
+    
+    // Modal
+    const [modalRelatorioAberto, setModalRelatorioAberto] = useState(false);
+    const [inicio, setInicio] = useState('');
+    const [fim, setFim] = useState('');
+    const [carregandoRelatorio, setCarregandoRelatorio] = useState(false);
+    const [erroRelatorio, setErroRelatorio] = useState('');
+
+    const abrirModalRelatorio = () => {
+        setErroRelatorio('');
+        setModalRelatorioAberto(true);
+    };
+
+    const fecharModalRelatorio = () => {
+        if (carregandoRelatorio) return;
+
+        setModalRelatorioAberto(false);
+        setErroRelatorio('');
+    };
+
+    const handleGerarRelatorio = async (e) => {
+        e.preventDefault();
+        setErroRelatorio('');
+
+        if (!inicio || !fim) {
+            setErroRelatorio('Preencha as datas de início e fim.');
+            return;
+        }
+
+        if (inicio > fim) {
+            setErroRelatorio(
+                'A data de início não pode ser posterior à data de fim.'
+            );
+            return;
+        }
+
+        try {
+            setCarregandoRelatorio(true);
+
+            await baixarRelatorioPDF(equipamento.identificador, inicio, fim);
+
+            setModalRelatorioAberto(false);
+        } catch (error) {
+            console.error('Erro ao gerar relatório:', error);
+
+            setErroRelatorio(
+                'Não foi possível gerar o relatório. Tente novamente.'
+            );
+        } finally {
+            setCarregandoRelatorio(false);
+        }
+    };
+    // Fim Modal
 
     useEffect(() => {
         if (!equipamento) return
@@ -126,20 +182,7 @@ function Dashboard({ equipamento, onFechar }) {
                 setErro(null)
                 setStatusDados('carregando')
 
-                const token = await getIdToken()
-                const response = await fetch(
-                    `${API_URL}/api/equipamentos/${equipamento.identificador}/dados/`,
-                    {
-                        method: "GET",
-                        headers: { Authorization: `Bearer ${token}` }
-                    }
-                )
-
-                const data = await response.json()
-
-                if (!response.ok) {
-                    throw new Error(data.message || "Não foi possível carregar os dados do equipamento.")
-                }
+                const data = await getEquipmentData(equipamento.identificador)
 
                 const dados = data.dados || {}
                 const leiturasRecebidas = Object.values(dados)
@@ -209,13 +252,13 @@ function Dashboard({ equipamento, onFechar }) {
     const valorPressao = leitura?.["pressão"] ?? leitura?.pressao ?? 0
     const valorRpm = leitura?.rpm ?? 0
     const valorVento = leitura?.vento ?? 0
-    const valorLuz = leitura?.luz ?? 0
+
 
     const valorPh = leitura?.ph ?? 0
     const valorTurbidez = leitura?.turbidez_ntu ?? 0
     const valorSensorUV = leitura?.sensor_uv_v ?? 0
     const valorAdc = leitura?.adc ?? 0
-    const valorTensao = leitura?.tensao_v ?? 0
+
 
     return (
         <div className={styles.dashboard}>
@@ -250,13 +293,137 @@ function Dashboard({ equipamento, onFechar }) {
                 </div>
 
                 <div className={styles.actionsBox}>
-                    <Link to={`/historico/${equipamento.identificador}`} className={styles.btnHistorico}>
+                    <button className={`${styles.btnAction} ${chatAberto ? styles.chatbotActive: ''}`}
+                        onClick={() => setChatAberto((aberto) => !aberto)}
+                        title="Abrir chatbot"
+                        aria-label="Abrir chatbot"
+                        aria-pressed={chatAberto}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                        Morhinga Chatbot
+                    </button>
+
+                    {/* Botão adicionado "Gerar Relatório" */}
+                    <button
+                        type="button"
+                        onClick={abrirModalRelatorio} 
+                        className={styles.btnAction}
+                    >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                            <line x1="9" y1="12" x2="15" y2="12" />
+                            <line x1="9" y1="16" x2="13" y2="16" />
+                        </svg>
+                        Gerar Relatório
+                    </button>
+
+                    {modalRelatorioAberto &&
+                    createPortal(
+                        <div
+                            className={styles.modalRelatorioFundo}
+                            onMouseDown={(e) => {
+                                if (e.target === e.currentTarget) {
+                                    fecharModalRelatorio();
+                                }
+                            }}
+                        >
+                            <section
+                                className={styles.modalRelatorio}
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="titulo-modal-relatorio"
+                            >
+                                <button
+                                    type="button"
+                                    className={styles.modalRelatorioFechar}
+                                    onClick={fecharModalRelatorio}
+                                    disabled={carregandoRelatorio}
+                                    aria-label="Fechar modal"
+                                >
+                                    ×
+                                </button>
+
+                                <h2 id="titulo-modal-relatorio">Gerar relatório PDF</h2>
+                                <p>Selecione o período desejado para o relatório.</p>
+
+                                <form onSubmit={handleGerarRelatorio}>
+                                    <div className={styles.campoRelatorio}>
+                                        <label htmlFor="data-inicio-relatorio">
+                                            Data de início
+                                        </label>
+
+                                        <input
+                                            id="data-inicio-relatorio"
+                                            type="date"
+                                            value={inicio}
+                                            max={fim || undefined}
+                                            onChange={(e) => setInicio(e.target.value)}
+                                            required
+                                            disabled={carregandoRelatorio}
+                                        />
+                                    </div>
+
+                                    <div className={styles.campoRelatorio}>
+                                        <label htmlFor="data-fim-relatorio">
+                                            Data de fim
+                                        </label>
+
+                                        <input
+                                            id="data-fim-relatorio"
+                                            type="date"
+                                            value={fim}
+                                            min={inicio || undefined}
+                                            onChange={(e) => setFim(e.target.value)}
+                                            required
+                                            disabled={carregandoRelatorio}
+                                        />
+                                    </div>
+
+                                    {erroRelatorio && (
+                                        <p
+                                            className={styles.erroRelatorio}
+                                            role="alert"
+                                        >
+                                            {erroRelatorio}
+                                        </p>
+                                    )}
+
+                                    <div className={styles.acoesRelatorio}>
+                                        <button
+                                            type="button"
+                                            className={styles.cancelarRelatorio}
+                                            onClick={fecharModalRelatorio}
+                                            disabled={carregandoRelatorio}
+                                        >
+                                            Cancelar
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            className={styles.confirmarRelatorio}
+                                            disabled={carregandoRelatorio}
+                                        >
+                                            {carregandoRelatorio
+                                                ? 'Gerando PDF...'
+                                                : 'Gerar PDF'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>,
+                        document.body
+                    )}
+
+                    <Link to={`/historico/${equipamento.identificador}`} className={styles.btnAction}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="12 8 12 12 14 14" />
                             <circle cx="12" cy="12" r="10" />
                         </svg>
                         Histórico
                     </Link>
+                    
                     <button onClick={onFechar} className={styles.btnClose} title="Fechar Dashboard">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18" />
@@ -283,6 +450,12 @@ function Dashboard({ equipamento, onFechar }) {
             {/* Grid de Cards - Estação */}
             {!carregando && !erro && leitura && !isBoia && (
                 <div className={styles.grid}>
+
+                    {chatAberto && (
+                        <div className={styles.chatCard}>
+                            <Chatbot equipamentoId={equipamento.identificador} />
+                        </div>
+                    )}
                     
                     <div className={styles.card}>
                         <p className={styles.cardInfoTitle}>Última leitura</p>
@@ -318,6 +491,13 @@ function Dashboard({ equipamento, onFechar }) {
             {/* Grid de Cards - Boia */}
             {!carregando && !erro && leitura && isBoia && (
                 <div className={styles.grid}>
+
+                    {chatAberto && (
+                        <div className={styles.chatCard}>
+                            <Chatbot equipamentoId={equipamento.identificador} />
+                        </div>
+                    )}
+
                     <div className={styles.card}>
                         <p className={styles.cardInfoTitle}>Última leitura</p>
                         {leitura?.hora ? (
@@ -327,7 +507,6 @@ function Dashboard({ equipamento, onFechar }) {
                             </>
                         ) : (<p className={styles.cardInfoData}>—</p>)}
                     </div>
-
 
                     <div className={styles.card}><Gauge titulo="pH" valor={valorPh} min={0} max={14} cor="#00e5ff" unidade="pH" /></div>
                     <div className={styles.card}><Gauge titulo="Turbidez" valor={valorTurbidez} min={0} max={100} cor="#557db4" unidade="V" /></div>

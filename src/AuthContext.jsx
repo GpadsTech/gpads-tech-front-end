@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { getCurrentUserProfile } from "./services/userService.js"
+import { useEffect, useState } from "react"
+import { AuthContext } from "./contexts/authContext.js"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "./firebase"
 
-const AuthContext = createContext(null)
 
-const API_URL = "https://gpads-api-dados.onrender.com"
 
 export function AuthProvider({ children }) {
 
@@ -32,28 +32,9 @@ export function AuthProvider({ children }) {
 
                     const token = await usuarioAtual.getIdToken()
 
-                    const response = await fetch(
-                        `${API_URL}/api/auth/me/`,
-                        {
-                            method: "GET",
-                            headers: {
-                                Authorization: `Bearer ${token}`
-                            }
-                        }
-                    )
+                    const profile = await getCurrentUserProfile(token)
 
-                    const data = await response.json()
-
-                    if (!response.ok) {
-
-                        throw new Error(
-                            data.message ||
-                            "Não foi possível carregar os dados do usuário."
-                        )
-
-                    }
-
-                    setDadosUsuario(data.usuario)
+                    setDadosUsuario(profile)
 
                 } catch (error) {
 
@@ -88,10 +69,4 @@ export function AuthProvider({ children }) {
             {children}
         </AuthContext.Provider>
     )
-}
-
-export function useAuth() {
-
-    return useContext(AuthContext)
-
 }

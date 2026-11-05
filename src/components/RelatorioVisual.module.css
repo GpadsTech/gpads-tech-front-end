@@ -1,0 +1,51 @@
+.relatorio {
+  width: 100%;
+}
+
+.titulo {
+  margin: 0;
+  font-size: 13px;
+  color: #00e5ff;
+}
+
+.periodo {
+  margin: 2px 0 10px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  background: rgba(0, 229, 255, 0.06);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  border-radius: 8px;
+}
+
+.kpiValor {
+  font-size: 16px;
+  font-weight: 700;
+  color: #00e5ff;
+}
+
+.kpiLabel {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.graficoTitulo {
+  margin: 10px 0 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
