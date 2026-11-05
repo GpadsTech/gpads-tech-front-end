@@ -25,7 +25,7 @@ export async function getIdToken() {
         throw new Error("Nenhum usuário está autenticado.")
     }
 
-    const token = await user.getIdToken(true)
+    const token = await user.getIdToken()
     return token
 }
 

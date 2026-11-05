@@ -58,7 +58,7 @@ export async function baixarRelatorioPDF(equipamentoId, inicio, fim) {
 
       headers: { "Content-Type": "application/json" },
 
-      body: JSON.stringify({ inicio, fim }),
+      body: { inicio, fim },
 
     },
 
