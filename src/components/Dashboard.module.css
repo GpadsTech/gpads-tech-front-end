@@ -443,7 +443,7 @@
     }
 }
 
-@media (max-width: 581px) {
+@media (max-width: 580px) {
     .actionsBox {
         flex-direction: column;
         align-items: end;
@@ -455,7 +455,7 @@
 
     .btnClose {
         position: relative;
-        bottom: 183px;
+        bottom: 235.7px;
         margin-top: -42px;
         margin-left: 0;
     }

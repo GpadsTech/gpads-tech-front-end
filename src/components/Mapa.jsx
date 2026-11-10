@@ -187,13 +187,14 @@ function Mapa({ onEstacaoClick }) {
                         Alterar localização
                       </button>
 
-                      <button
+                      <a
                         type="button"
                         className={styles.popupBtnPrimary}
                         onClick={() => handleAbrirDashboard(equipamento)}
+                        href="#dashboard"
                       >
                         Abrir dashboard &rarr;
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </Popup>

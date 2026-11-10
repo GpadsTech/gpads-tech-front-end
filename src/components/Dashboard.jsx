@@ -261,7 +261,7 @@ function Dashboard({ equipamento, onFechar }) {
 
 
     return (
-        <div className={styles.dashboard}>
+        <div className={styles.dashboard} id="dashboard">
             
             {/* Header do Dashboard */}
             <div className={styles.headerDashboard}>

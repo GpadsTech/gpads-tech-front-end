@@ -18,7 +18,9 @@ function Gauge({ titulo, valor, min, max, cor, unidade})
             }}>
             {titulo}
             </p>
-            <div style={{position: 'relative', width: 265, height: 250}}>
+            <div style={{
+                    position: 'relative', width: 265, height: 250
+                }}>
             <RadialBarChart
             //tamanho do grafico
             width={280}

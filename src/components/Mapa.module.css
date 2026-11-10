@@ -318,7 +318,7 @@
     border: none;
     border-radius: 10px;
     background: linear-gradient(90deg, #00b9d6 0%, #00e5ff 100%);
-    color: #011924;
+    color: #011924 !important;
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
@@ -328,6 +328,8 @@
     gap: 6px;
     transition: all 0.2s ease;
     box-shadow: 0 4px 15px rgba(0, 217, 235, 0.3);
+    text-decoration: none;
+    text-align: center;
 }
 
 .popupBtnPrimary:hover {
