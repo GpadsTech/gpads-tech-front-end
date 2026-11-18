@@ -95,11 +95,20 @@ function Historico() {
     const { identifier } = useParams()
     const [dataInicio, setDatainicio] = useState('')
     const [dataFinal, setDataFinal] = useState('')
+    const [dataInicioR, setDatainicioR] = useState('')
+    const [dataFinalR, setDataFinalR] = useState('')
+    const [dataInicioP1, setDatainicioP1] = useState('')
+    const [dataFinalP1, setDataFinalP1] = useState('')
+    const [dataInicioP2, setDatainicioP2] = useState('')
+    const [dataFinalP2, setDataFinalP2] = useState('')
     const [dados, setDados] = useState([])
     const [equipamento, setEquipamento] = useState(null)
     const [localizacaoSelecionada, setLocalizacaoSelecionada] = useState(null)
-    const [carregando, setCarregando] = useState(false)
+    const [carregandoPesquisa, setCarregandoPesquisa] = useState(false)
+    const [carregandoCSV, setCarregandoCSV] = useState(false)
     const [erro, setErro] = useState('')
+
+    const [abaAnalise, setAbaAnalise] = useState("resumo")
 
     const localizacoes = []
     dados.forEach((item) => {
@@ -125,7 +134,7 @@ function Historico() {
         }) : []
 
     const pesquisar = async () => {
-        setCarregando(true)
+        setCarregandoPesquisa(true)
         setErro('')
         try {
 
@@ -143,16 +152,20 @@ function Historico() {
             setDados([])
             setEquipamento(null)
         } finally {
-            setCarregando(false)
+            setCarregandoPesquisa(false)
         }
     }
 
     const handleExport = async () => {
+        setCarregandoCSV(true)
         try {
-          await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal);
+
+            await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal);
         } catch (error) {
-          console.error("Erro ao exportar CSV:", error);
-          setErro(error.message || "Não foi possível exportar o CSV.");
+            console.error("Erro ao exportar CSV:", error);
+            setErro(error?.message || "Não foi possível exportar o CSV.");
+        } finally {
+            setCarregandoCSV(false)
         }
     }
 
@@ -172,7 +185,7 @@ function Historico() {
                     <h2 className={styles.titulo}>Histórico do Equipamento</h2>
                 </div>
 
-                {/* Filtros */}
+                {/* Filtros: Pesquisa e CSV */}
                 <div className={styles.filtrosCard}>
                     <div className={styles.filtrosInputs}>
                         <div className={styles.campo}>
@@ -194,18 +207,23 @@ function Historico() {
                             />
                         </div>
                     </div>
-                    <div className={styles.searchAndCSV}>
-                        <button className={styles.btnPesquisar} onClick={pesquisar} disabled={carregando}>
+                    <div className={styles.actions}>
+                        <button 
+                            className={styles.btnPesquisar}
+                            onClick={pesquisar} 
+                            disabled={carregandoPesquisa}
+                        >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <circle cx="11" cy="11" r="8" />
                                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
                             </svg>
-                            {carregando ? "Buscando..." : "Pesquisar"}
+                            {carregandoPesquisa ? "Buscando..." : "Pesquisar"}
                         </button>
-                        {/* Botão adicionado "Gerar CSV" */}
+
                         <button 
-                            onClick={handleExport}
                             className={styles.btnGerarCSV}
+                            onClick={handleExport}
+                            disabled={carregandoCSV}
                         >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -213,13 +231,13 @@ function Historico() {
                                 <line x1="8" y1="13" x2="16" y2="13" />
                                 <line x1="8" y1="17" x2="16" y2="17" />
                             </svg>
-                            Gerar CSV
+                            {carregandoCSV ? "Gerando CSV..." : "Gerar CSV"}
                         </button>
                     </div>
                 </div>
 
                 {/* Alertas */}
-                {carregando && (
+                {carregandoPesquisa && (
                     <div className={styles.loadingBox}>
                         <div className={styles.spinner}></div>
                         <p>Carregando histórico...</p>
@@ -238,7 +256,7 @@ function Historico() {
                 )}
 
                 {/* Conteúdo: Mapa e Dados */}
-                {equipamento && !carregando && (
+                {equipamento && !carregandoPesquisa && (
                     <div className={styles.historicoContainer}>
                         
                         <div className={styles.mapaCard}>
@@ -330,6 +348,152 @@ function Historico() {
                         )}
                     </div>
                 )}
+
+                <section className={styles.analiseSection}>
+
+                    <h3 className={styles.subtituloSecao}>Análise das medições</h3>
+
+                    <div className={styles.abas}>
+                        <button
+                            type="button"
+                            className={`${styles.aba} ${abaAnalise === "resumo" ? styles.abaAtiva : ""}`}
+                            onClick={() => setAbaAnalise("resumo")}
+                        >
+                            Resumo estatístico
+                        </button>
+
+                        <button
+                            type="button"
+                            className={`${styles.aba} ${abaAnalise === "comparacao" ? styles.abaAtiva : ""}`}
+                            onClick={() => setAbaAnalise("comparacao")}
+                        >
+                            Comparação entre períodos
+                        </button>
+                    </div>
+
+                    {abaAnalise === "resumo" && (
+                        // Filtros: Resumo
+                        <div className={styles.filtrosCard}>
+                            <div className={styles.filtrosInputs}>
+                                <div className={styles.campoVar}>
+                                    <label className={styles.label}>Variável</label>
+                                    <input
+                                        className={styles.inputDate}
+                                        // type="var"
+                                        // value={variável} 
+                                        // onChange={variavel}
+                                    />
+                                </div>
+
+                                <div className={styles.campo}>
+                                    <label className={styles.label}>Data de Início</label>
+                                    <input
+                                        className={styles.inputDate}
+                                        type="date"
+                                        value={dataInicioR}
+                                        onChange={(e) => setDatainicioR(e.target.value)}
+                                    />
+                                </div>
+                                <div className={styles.campo}>
+                                    <label className={styles.label}>Data Final</label>
+                                    <input
+                                        className={styles.inputDate}
+                                        type="date"
+                                        value={dataFinalR}
+                                        onChange={(e) => setDataFinalR(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                            <div className={styles.actions}>
+                                <button 
+                                    className={styles.btnPesquisar}
+                                    // onClick={pesquisarResumo}
+                                    // disabled={carregando}
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                                        <line x1="9" y1="12" x2="15" y2="12" />
+                                        <line x1="9" y1="16" x2="13" y2="16" />
+                                    </svg>
+                                    Gerar Resumo
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {abaAnalise === "comparacao" && (
+                        // Filtros: Comparação
+                        <div className={styles.filtrosGrid}>
+                            
+                            <div className={styles.campoVar}>
+                                <label className={styles.label}>Variável</label>
+                                <input
+                                    className={styles.inputDate}
+                                    // type="var"
+                                    // value={variável} 
+                                    // onChange={variavel}
+                                />
+                            </div>
+
+                            <div className={styles.campo}>
+                                <label className={styles.label}>Período 1: Início</label>
+                                <input
+                                    className={styles.inputDate}
+                                    type="date"
+                                    value={dataInicioR}
+                                    onChange={(e) => setDatainicioP1(e.target.value)}
+                                />
+                            </div>
+                            <div className={styles.campo}>
+                                <label className={styles.label}>Período 1: Final</label>
+                                <input
+                                    className={styles.inputDate}
+                                    type="date"
+                                    value={dataFinalR}
+                                    onChange={(e) => setDataFinalP1(e.target.value)}
+                                />
+                            </div>
+
+                            <div className={`${styles.campo} ${styles.periodoInicial2}`}>
+                                <label className={styles.label}>Período 2: Início</label>
+                                <input
+                                    className={styles.inputDate}
+                                    type="date"
+                                    value={dataInicioR}
+                                    onChange={(e) => setDatainicioP2(e.target.value)}
+                                />
+                            </div>
+                            <div className={`${styles.campo} ${styles.periodoFinal2}`}>
+                                <label className={styles.label}>Período 2: Final</label>
+                                <input
+                                    className={styles.inputDate}
+                                    type="date"
+                                    value={dataFinalR}
+                                    onChange={(e) => setDataFinalP2(e.target.value)}
+                                />
+                            </div>
+
+                            <div className={styles.actions}>
+                                <button 
+                                    className={styles.btnPesquisar}
+                                    // onClick={pesquisarResumo}
+                                    // disabled={carregando}
+                                >
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                                        <line x1="9" y1="12" x2="15" y2="12" />
+                                        <line x1="9" y1="16" x2="13" y2="16" />
+                                    </svg>
+                                    Gerar Comparação
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                </section>
+
             </div>
         </div>
     )
