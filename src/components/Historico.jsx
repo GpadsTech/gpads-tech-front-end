@@ -91,6 +91,301 @@ function GraficoHistorico({ titulo, dados, dataKey, unidade = '', corLinha = "#0
     )
 }
 
+function formatarNumero(valor) {
+    if (valor === null || valor === undefined || !Number.isFinite(Number(valor))) {
+        return "—"
+    }
+
+    return Number(valor).toLocaleString("pt-BR", {
+        maximumFractionDigits: 2
+    })
+}
+
+function GraficoFaixaEstatistica({ dados }) {
+    const estatisticas = dados?.estatisticas
+
+    if (!estatisticas) return null
+
+    const media = Number(estatisticas.media)
+    const minimo = Number(estatisticas.minimo)
+    const maximo = Number(estatisticas.maximo)
+
+    const valoresValidos = [
+        media,
+        minimo,
+        maximo
+    ].every(Number.isFinite)
+
+    if (
+        !valoresValidos ||
+        minimo > maximo ||
+        media < minimo ||
+        media > maximo
+    ) {
+        return (
+            <div className={styles.resumoGraficoCard}>
+                <h4>Faixa dos valores</h4>
+                <p role="status">
+                    Não foi possível apresentar a distribuição
+                    dos valores recebidos.
+                </p>
+            </div>
+        )
+    }
+
+    const amplitude = maximo - minimo
+
+    const posicaoMedia = amplitude === 0
+        ? 50
+        : ((media - minimo) / amplitude) * 100
+
+    // pH não possui unidade física.
+    const unidade = dados.variavel?.toLowerCase() === "ph"
+        ? ""
+        : dados.unidade || ""
+
+    return (
+        <div className={styles.resumoGraficoCard}>
+            <h4 className={styles.resumoGraficoTitulo}>
+                Faixa dos valores
+            </h4>
+
+            <p className={styles.resumoGraficoDescricao}>
+                Distribuição da média entre o menor e o maior valor registrado.
+            </p>
+
+            <div
+                className={styles.faixaGrafico}
+                role="img"
+                aria-label={
+                    `Mínimo: ${formatarNumero(minimo)}. ` +
+                    `Média: ${formatarNumero(media)}. ` +
+                    `Máximo: ${formatarNumero(maximo)}.`
+                }
+            >
+                <div className={styles.faixaTrilho}>
+                    <span className={styles.faixaLinha} />
+
+                    <span className={styles.faixaPontoMinimo} />
+
+                    <span
+                        className={styles.faixaMarcadorMedia}
+                        style={{ left: `${posicaoMedia}%` }}
+                    />
+
+                    <span className={styles.faixaPontoMaximo} />
+                </div>
+            </div>
+
+            <div className={styles.faixaValores}>
+                <div>
+                    <span>Mínimo</span>
+                    <strong>
+                        {formatarNumero(minimo)} {unidade}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Média</span>
+                    <strong className={styles.valorMedia}>
+                        {formatarNumero(media)} {unidade}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Máximo</span>
+                    <strong>
+                        {formatarNumero(maximo)} {unidade}
+                    </strong>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function GraficoQualidadeRegistros({ dados }) {
+    if (!dados) return null
+
+    const total = Number(dados.registros_analisados)
+    const validos = Number(dados.registros_validos)
+    const nulos = Number(dados.registros_nulos)
+    const invalidos = Number(dados.registros_invalidos)
+    const utilizados = Number(dados.registros_utilizados)
+
+    const contagensValidas = [
+        total,
+        validos,
+        nulos,
+        invalidos,
+        utilizados
+    ].every(valor => Number.isSafeInteger(valor) && valor >= 0)
+
+    if (!contagensValidas) {
+        return (
+            <div className={styles.resumoGraficoCard}>
+                <h4>Qualidade dos registros</h4>
+                <p role="status">
+                    As informações de qualidade recebidas são inválidas.
+                </p>
+            </div>
+        )
+    }
+
+    const distribuicaoConsistente =
+        total > 0 &&
+        validos + nulos + invalidos === total
+
+    function formatarPercentual(valor) {
+        if (total === 0) return "0%"
+
+        return `${((valor / total) * 100).toLocaleString("pt-BR", {
+            maximumFractionDigits: 2
+        })}%`
+    }
+    
+    function calcularLargura(valor) {
+        if (total === 0) return "0%"
+
+        return `${(valor / total) * 100}%`
+    }
+
+    return (
+        <div className={styles.resumoGraficoCard}>
+            <h4 className={styles.resumoGraficoTitulo}>
+                Qualidade dos registros
+            </h4>
+
+            <div className={styles.totalRegistros}>
+                <strong>{formatarNumero(total)}</strong>
+                <span>registros analisados</span>
+            </div>
+
+            {total === 0 ? (
+                <p className={styles.qualidadeSemDados}>
+                    Nenhum registro foi encontrado no período selecionado.
+                </p>
+            ) : distribuicaoConsistente ? (
+                <>
+                    <div
+                        className={styles.qualidadeBarra}
+                        role="img"
+                        aria-label={
+                            `${validos} registros válidos, ` +
+                            `${nulos} nulos e ${invalidos} inválidos, ` +
+                            `de um total de ${total}.`
+                        }
+                    >
+                        {validos > 0 && (
+                            <span
+                                className={styles.segmentoValido}
+                                style={{width: calcularLargura(validos)}}
+                            />
+                        )}
+
+                        {nulos > 0 && (
+                            <span
+                                className={styles.segmentoNulo}
+                                style={{width: calcularLargura(nulos)}}
+                            />
+                        )}
+
+                        {invalidos > 0 && (
+                            <span
+                                className={styles.segmentoInvalido}
+                                style={{width: calcularLargura(invalidos)}}
+                            />
+                        )}
+                    </div>
+
+                    <div className={styles.qualidadeLegenda}>
+                        <div className={styles.qualidadeLegendaItem}>
+                            <span className={styles.legendaValido} />
+
+                            <span>Válidos</span>
+
+                            <strong>{formatarNumero(validos)}</strong>
+
+                            <small>{formatarPercentual(validos)}</small>
+                        </div>
+
+                        <div className={styles.qualidadeLegendaItem}>
+                            <span className={styles.legendaNulo} />
+
+                            <span>Nulos</span>
+
+                            <strong>{formatarNumero(nulos)}</strong>
+
+                            <small>{formatarPercentual(nulos)}</small>
+                        </div>
+
+                        <div className={styles.qualidadeLegendaItem}>
+                            <span className={styles.legendaInvalido} />
+
+                            <span>Inválidos</span>
+
+                            <strong>{formatarNumero(invalidos)}</strong>
+
+                            <small>{formatarPercentual(invalidos)}</small>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <p className={styles.qualidadeAviso}>
+                    A soma das categorias não corresponde
+                    ao total de registros analisados.
+                </p>
+            )}
+
+            <div className={styles.registrosUtilizados}>
+                <span>Registros utilizados no cálculo</span>
+
+                <strong>{formatarNumero(utilizados)}</strong>
+            </div>
+        </div>
+    )
+}
+
+function AlertasConsulta({
+    carregando,
+    erro,
+    mensagemCarregamento
+}) {
+    return (
+        <>
+            {carregando && (
+                <div
+                    className={styles.loadingBox}
+                    role="status"
+                    aria-live="polite"
+                >
+                    <div className={styles.spinner}></div>
+                    <p>{mensagemCarregamento}</p>
+                </div>
+            )}
+
+            {erro && (
+                <div
+                    className={styles.errorBox}
+                    role="alert"
+                >   
+                    <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                    >
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+
+                    {erro}
+                </div>
+            )}
+        </>
+    )
+}
+
 function Historico() {
     const { identifier } = useParams()
     const [dataInicio, setDatainicio] = useState('')
@@ -101,12 +396,21 @@ function Historico() {
     const [dataFinalP1, setDataFinalP1] = useState('')
     const [dataInicioP2, setDatainicioP2] = useState('')
     const [dataFinalP2, setDataFinalP2] = useState('')
+    
     const [dados, setDados] = useState([])
     const [equipamento, setEquipamento] = useState(null)
     const [localizacaoSelecionada, setLocalizacaoSelecionada] = useState(null)
+    const [resultadoResumo, setResultadoResumo] = useState(null)
+    const [resultadoComparacao, setResultadoComparacao] = useState(null)
+    
     const [carregandoPesquisa, setCarregandoPesquisa] = useState(false)
+    const [erroPesquisa, setErroPesquisa] = useState('')
     const [carregandoCSV, setCarregandoCSV] = useState(false)
-    const [erro, setErro] = useState('')
+    const [erroCSV, setErroCSV] = useState('')
+    const [carregandoResumo, setCarregandoResumo] = useState(false)
+    const [erroResumo, setErroResumo] = useState('')
+    const [carregandoComparacao, setCarregandoComparacao] = useState(false)
+    const [erroComparacao, setErroComparacao] = useState('')
 
     const [abaAnalise, setAbaAnalise] = useState("resumo")
 
@@ -135,7 +439,7 @@ function Historico() {
 
     const pesquisar = async () => {
         setCarregandoPesquisa(true)
-        setErro('')
+        setErroPesquisa('')
         try {
 
             const parametros = new URLSearchParams()
@@ -148,7 +452,7 @@ function Historico() {
             setDados(data.dados)
             setLocalizacaoSelecionada(null)
         } catch (error) {
-            setErro(error.message)
+            setErroPesquisa(error.message)
             setDados([])
             setEquipamento(null)
         } finally {
@@ -158,16 +462,204 @@ function Historico() {
 
     const handleExport = async () => {
         setCarregandoCSV(true)
+        setErroCSV('')
         try {
 
             await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal);
         } catch (error) {
             console.error("Erro ao exportar CSV:", error);
-            setErro(error?.message || "Não foi possível exportar o CSV.");
+            setErroCSV(error?.message || "Não foi possível exportar o CSV.");
         } finally {
             setCarregandoCSV(false)
         }
     }
+
+    // Função com dados mockados para testes
+    const pesquisarResumo = async () => {
+        setCarregandoResumo(true)
+        setErroResumo('')
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+
+            if (!dataInicioR || !dataFinalR) {
+                throw new Error('Informe as datas inicial e final.')
+            }
+
+            if (dataInicioR > dataFinalR) {
+                throw new Error('A data inicial não pode ser posterior à data final.')
+            }
+
+            // Fixture sintética: resposta simulada da API
+            const respostaMockada = {
+                equipamento_id: Number(identifier),
+                variavel: "ph",
+                unidade: "pH",
+
+                periodo: {
+                    inicio: dataInicioR,
+                    fim: dataFinalR
+                },
+
+                estatisticas: {
+                    media: 5.61,
+                    minimo: 5.54,
+                    maximo: 5.82
+                },
+
+                qualidade_dos_dados: {
+                    registros_analisados: 72,
+                    registros_validos: 50,
+                    registros_nulos: 10,
+                    registros_invalidos: 12,
+                    registros_utilizados: 50
+                }
+            }
+
+            setResultadoResumo(respostaMockada)
+
+        } catch (error) {
+            setErroResumo(error.message)
+            setResultadoResumo(null)
+
+        } finally {
+            setCarregandoResumo(false)
+        }
+    }
+
+    // Função com dados mockados para testes
+    const pesquisarComparacao = async () => {
+        setCarregandoComparacao(true)
+        setErroComparacao('')
+
+        try {
+            await new Promise(resolve => setTimeout(resolve, 1200))
+
+            if (!dataInicioP1 || !dataFinalP1 || !dataInicioP2 || !dataFinalP2) {
+                throw new Error('Preencha todas as datas dos dois períodos.')
+            }
+
+            if (dataInicioP1 > dataFinalP1 || dataInicioP2 > dataFinalP2) {
+                throw new Error('Verifique as datas informadas.')
+            }
+
+            const duracaoP1 =
+                new Date(`${dataFinalP1}T00:00:00`) -
+                new Date(`${dataInicioP1}T00:00:00`)
+
+            const duracaoP2 =
+                new Date(`${dataFinalP2}T00:00:00`) -
+                new Date(`${dataInicioP2}T00:00:00`)
+
+            if (duracaoP1 !== duracaoP2) {
+                throw new Error('Os dois períodos devem possuir a mesma duração.')
+            }
+
+            // Fixture sintética: resposta simulada da API
+            const respostaMockada = {
+                equipamento_id: Number(identifier),
+                variavel: "ph",
+                unidade: "pH",
+
+                periodo_1: {
+                    inicio: dataInicioP1,
+                    fim: dataFinalP1,
+                    media: 5.42,
+                    registros_validos: 90
+                },
+
+                periodo_2: {
+                    inicio: dataInicioP2,
+                    fim: dataFinalP2,
+                    media: 6.10,
+                    registros_validos: 85
+                },
+
+                diferenca_absoluta: 0.68
+            }
+
+            setResultadoComparacao(respostaMockada)
+
+        } catch (error) {
+            setErroComparacao(error.message)
+            setResultadoComparacao(null)
+
+        } finally {
+            setCarregandoComparacao(false)
+        }
+    }
+
+    // Fixtures sintéticas: utilizadas somente durante o desenvolvimento.
+    const qualidadeMockadas = {
+    atualizado: {
+        equipamento_id: Number(identifier),
+        ultima_medicao_valida: "2026-09-23 08:25:34",
+        idade_minutos: 15,
+        status: "atualizado",
+        registros_nulos: 5,
+        registros_invalidos: 2,
+    },
+
+    desatualizado: {
+        equipamento_id: Number(identifier),
+        ultima_medicao_valida: "2026-09-23 08:25:34",
+        idade_minutos: 180,
+        status: "desatualizado",
+        registros_nulos: 5,
+        registros_invalidos: 2,
+    },
+
+    sem_dados: {
+        equipamento_id: Number(identifier),
+        ultima_medicao_valida: null,
+        idade_minutos: null,
+        status: "sem_dados",
+        registros_nulos: 0,
+        registros_invalidos: 0,
+    },
+
+    indeterminado: {
+        equipamento_id: Number(identifier),
+        ultima_medicao_valida: null,
+        idade_minutos: null,
+        status: "indeterminado",
+        registros_nulos: null,
+        registros_invalidos: null,
+    },
+    };
+
+    // Altere o estado selecionado para testar os diferentes badges.
+    const qualidadeMockada = qualidadeMockadas.indeterminado;
+
+    const badgesStatusQualidade = {
+    atualizado: {
+        texto: "Atualizado",
+        classe: styles.badgeAtualizado,
+        descricao: "Medições dentro do intervalo esperado",
+    },
+
+    desatualizado: {
+        texto: "Desatualizado",
+        classe: styles.badgeDesatualizado,
+        descricao: "Última medição válida ultrapassou o intervalo esperado",
+    },
+
+    sem_dados: {
+        texto: "Sem dados",
+        classe: styles.badgeSemDados,
+        descricao: "Não existem medições disponíveis",
+    },
+
+    indeterminado: {
+        texto: "Indeterminado",
+        classe: styles.badgeIndeterminado,
+        descricao: "Não há informações suficientes para determinar a situação",
+    },
+    };
+
+    const badgeStatus =
+    badgesStatusQualidade[qualidadeMockada.status] ??
+    badgesStatusQualidade.indeterminado;
 
     return (
         <div className={styles.pageContainer}>
@@ -244,14 +736,32 @@ function Historico() {
                     </div>
                 )}
 
-                {erro && (
+                {carregandoCSV && (
+                    <div className={styles.loadingBox}>
+                        <div className={styles.spinner}></div>
+                        <p>Gerando CSV...</p>
+                    </div>
+                )}
+
+                {erroPesquisa && (
                     <div className={styles.errorBox}>
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <circle cx="12" cy="12" r="10" />
                             <line x1="12" y1="8" x2="12" y2="12" />
                             <line x1="12" y1="16" x2="12.01" y2="16" />
                         </svg>
-                        {erro}
+                        {erroPesquisa}
+                    </div>
+                )}
+
+                {erroCSV && (
+                    <div className={styles.errorBox}>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        {erroCSV}
                     </div>
                 )}
 
@@ -351,7 +861,55 @@ function Historico() {
 
                 <section className={styles.analiseSection}>
 
-                    <h3 className={styles.subtituloSecao}>Análise das medições</h3>
+                    <div>
+                        <h3 className={styles.subtituloSecao}>Análise das medições</h3>
+                        {/* <p>Equipamento: {equipamento.nome} - Identificador: {equipamento.identificador}</p> */}
+                    </div>
+
+                    <div className={styles.qualidadeCard}>
+                        <div className={styles.qualidadeCabecalho}>
+                            <div>
+                                <h4>Qualidade dos dados</h4>
+                                <p>Estado atual das medições do equipamento</p>
+                            </div>
+
+                            <span
+                                className={`${styles.badgeStatus} ${badgeStatus.classe}`}
+                                role="status"
+                                title={badgeStatus.descricao}
+                            >
+                                {badgeStatus.texto}
+                            </span>
+                        </div>
+
+                        <div className={styles.qualidadeInformacoes}>
+                            <div className={styles.qualidadeItem}>
+                                <span>Última medição válida</span>
+                                <strong>
+                                    {qualidadeMockada.ultima_medicao_valida ?? "Não disponível"}
+                                </strong>
+                            </div>
+
+                            <div className={styles.qualidadeItem}>
+                                <span>Tempo desde a última medição</span>
+                                <strong>
+                                    {qualidadeMockada.idade_minutos != null
+                                    ? `${qualidadeMockada.idade_minutos} minutos`
+                                    : "Não disponível"}
+                                </strong>
+                            </div>
+                        </div>
+
+                        <div className={styles.qualidadeContagens}>
+                            <span className={`${styles.badgeContagem} ${styles.badgeNulos}`}>
+                                Nulos: {qualidadeMockada.registros_nulos ?? "—"}
+                            </span>
+
+                            <span className={`${styles.badgeContagem} ${styles.badgeInvalidos}`}>
+                                Inválidos: {qualidadeMockada.registros_invalidos ?? "—"}
+                            </span>
+                        </div>
+                    </div>
 
                     <div className={styles.abas}>
                         <button
@@ -407,8 +965,8 @@ function Historico() {
                             <div className={styles.actions}>
                                 <button 
                                     className={styles.btnPesquisar}
-                                    // onClick={pesquisarResumo}
-                                    // disabled={carregando}
+                                    onClick={pesquisarResumo}
+                                    disabled={carregandoResumo}
                                 >
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -416,7 +974,7 @@ function Historico() {
                                         <line x1="9" y1="12" x2="15" y2="12" />
                                         <line x1="9" y1="16" x2="13" y2="16" />
                                     </svg>
-                                    Gerar Resumo
+                                    {carregandoResumo ? "Gerando resumo..." : "Gerar Resumo"}
                                 </button>
                             </div>
                         </div>
@@ -441,7 +999,7 @@ function Historico() {
                                 <input
                                     className={styles.inputDate}
                                     type="date"
-                                    value={dataInicioR}
+                                    value={dataInicioP1}
                                     onChange={(e) => setDatainicioP1(e.target.value)}
                                 />
                             </div>
@@ -450,7 +1008,7 @@ function Historico() {
                                 <input
                                     className={styles.inputDate}
                                     type="date"
-                                    value={dataFinalR}
+                                    value={dataFinalP1}
                                     onChange={(e) => setDataFinalP1(e.target.value)}
                                 />
                             </div>
@@ -460,7 +1018,7 @@ function Historico() {
                                 <input
                                     className={styles.inputDate}
                                     type="date"
-                                    value={dataInicioR}
+                                    value={dataInicioP2}
                                     onChange={(e) => setDatainicioP2(e.target.value)}
                                 />
                             </div>
@@ -469,7 +1027,7 @@ function Historico() {
                                 <input
                                     className={styles.inputDate}
                                     type="date"
-                                    value={dataFinalR}
+                                    value={dataFinalP2}
                                     onChange={(e) => setDataFinalP2(e.target.value)}
                                 />
                             </div>
@@ -477,8 +1035,8 @@ function Historico() {
                             <div className={styles.actions}>
                                 <button 
                                     className={styles.btnPesquisar}
-                                    // onClick={pesquisarResumo}
-                                    // disabled={carregando}
+                                    onClick={pesquisarComparacao}
+                                    disabled={carregandoComparacao}
                                 >
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
@@ -486,9 +1044,33 @@ function Historico() {
                                         <line x1="9" y1="12" x2="15" y2="12" />
                                         <line x1="9" y1="16" x2="13" y2="16" />
                                     </svg>
-                                    Gerar Comparação
+                                    {carregandoComparacao ? "Comparando..." : "Gerar Comparação"}
                                 </button>
                             </div>
+                        </div>
+                    )}
+
+                    <AlertasConsulta
+                        carregando={carregandoResumo}
+                        erro={erroResumo}
+                        mensagemCarregamento="Gerando resumo estatístico..."
+                    />
+
+                    <AlertasConsulta
+                        carregando={carregandoComparacao}
+                        erro={erroComparacao}
+                        mensagemCarregamento="Comparando períodos..."
+                    />
+
+                    {abaAnalise === "resumo" && resultadoResumo && !carregandoResumo && (
+                        <div className={styles.resumoGraficosGrid}>
+                            <GraficoFaixaEstatistica
+                                dados={resultadoResumo}
+                            />
+
+                            <GraficoQualidadeRegistros
+                                dados={resultadoResumo.qualidade_dos_dados}
+                            />
                         </div>
                     )}
 

@@ -101,7 +101,7 @@ function Header() {
                             <div className={styles.informacoesUsuario}>
                                 <div className={styles.nomeLinha}>
                                     <span className={styles.nomeUsuario}>
-                                        {dadosUsuario?.nome || 'Anderson Admin'}
+                                        {dadosUsuario.nome}
                                     </span>
                                     <svg className={styles.setaBaixo} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <polyline points="6 9 12 15 18 9"></polyline>
