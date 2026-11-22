@@ -449,7 +449,7 @@
 .qualidadeCard {
   width: 100%;
   padding: 16px 18px;
-  margin: 14px 0 20px;
+  margin: 10px 0 10px;
   background: rgba(11, 31, 58, 0.85);
   border: 1px solid rgba(34, 211, 238, 0.2);
   border-radius: 12px;
@@ -619,8 +619,6 @@
     grid-area: 2 / 3 / 3 / 4;
 }
 
-/* Gráficos do resumo estatístico */
-
 .resumoGraficosGrid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -637,14 +635,14 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-.resumoGraficoTitulo {
+.analiseGraficoTitulo {
     margin: 0;
     color: #ffffff;
     font-size: 1.05rem;
     font-weight: 700;
 }
 
-.resumoGraficoDescricao {
+.analiseGraficoDescricao {
     margin: 8px 0 0;
     color: #a9bfd3;
     font-size: 0.82rem;
@@ -866,7 +864,150 @@
     line-height: 1.5;
 }
 
+.resultadoComparacao {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+    min-width: 0;
+}
+
+.resultadoComparacaoCabecalho h4 {
+    margin: 0;
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.resultadoComparacaoCabecalho p {
+    margin: 6px 0 0;
+    color: #a9bfd3;
+    font-size: 0.85rem;
+}
+
+.comparacaoKPIGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+}
+
+.kpiComparacaoCard {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 22px;
+    box-sizing: border-box;
+
+    background: rgba(4, 18, 38, 0.8);
+    border: 1px solid rgba(0, 217, 235, 0.25);
+    border-radius: 14px;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+.kpiPeriodo1 {
+    border-top: 3px solid #00b9d6;
+}
+
+.kpiPeriodo2 {
+    border-top: 3px solid #00e5ff;
+}
+
+.kpiCabecalho {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.kpiDatas {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+
+    color: #a9bfd3;
+    font-size: 0.78rem;
+}
+
+.kpiSeparador {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+.kpiValorContainer {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 8px;
+}
+
+.kpiValor {
+    color: #ffffff;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.kpiUnidade {
+    color: #a9bfd3;
+    font-size: 0.95rem;
+}
+
+.kpiDescricao {
+    color: #a9bfd3;
+    font-size: 0.78rem;
+}
+
+.kpiRegistros {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid rgba(0, 217, 235, 0.18);
+}
+
+.kpiRegistros span {
+    color: #a9bfd3;
+    font-size: 0.78rem;
+}
+
+.kpiRegistros strong {
+    color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.kpiDiferencaCard {
+    justify-content: center;
+    background: rgba(0, 120, 150, 0.12);
+    border: 1.5px solid rgba(0, 217, 235, 0.5);
+}
+
+.kpiDiferencaValor {
+    color: #00e5ff;
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
 /* Responsividade */
+@media (max-width: 900px) {
+    .comparacaoKPIGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kpiDiferencaCard {
+        grid-column: 1 / -1;
+    }
+}
+
 @media (max-width: 768px) {
     .filtrosCard {
         flex-direction: column;
@@ -883,6 +1024,28 @@
 
     .resumoGraficosGrid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .comparacaoKPIGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .kpiDiferencaCard {
+        grid-column: auto;
+    }
+
+    .kpiComparacaoCard {
+        padding: 18px;
+    }
+
+    .kpiValor {
+        font-size: 1.8rem;
+    }
+
+    .kpiDiferencaValor {
+        font-size: 2rem;
     }
 }
 

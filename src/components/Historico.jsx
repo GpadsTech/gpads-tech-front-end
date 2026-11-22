@@ -146,11 +146,11 @@ function GraficoFaixaEstatistica({ dados }) {
 
     return (
         <div className={styles.resumoGraficoCard}>
-            <h4 className={styles.resumoGraficoTitulo}>
+            <h4 className={styles.analiseGraficoTitulo}>
                 Faixa dos valores
             </h4>
 
-            <p className={styles.resumoGraficoDescricao}>
+            <p className={styles.analiseGraficoDescricao}>
                 Distribuição da média entre o menor e o maior valor registrado.
             </p>
 
@@ -251,7 +251,7 @@ function GraficoQualidadeRegistros({ dados }) {
 
     return (
         <div className={styles.resumoGraficoCard}>
-            <h4 className={styles.resumoGraficoTitulo}>
+            <h4 className={styles.analiseGraficoTitulo}>
                 Qualidade dos registros
             </h4>
 
@@ -383,6 +383,183 @@ function AlertasConsulta({
                 </div>
             )}
         </>
+    )
+}
+
+function formatarDataComparacao(data) {
+    if (!data) return "Não informada"
+
+    const partes = data.split("-")
+
+    if (partes.length !== 3) return data
+
+    const [ano, mes, dia] = partes.map(Number)
+
+    const dataFormatada = new Date(ano, mes - 1, dia)
+
+    // Evita datas inválidas, como 32/13/2026.
+    if (
+        dataFormatada.getFullYear() !== ano ||
+        dataFormatada.getMonth() !== mes - 1 ||
+        dataFormatada.getDate() !== dia
+    ) {
+        return data
+    }
+
+    return dataFormatada.toLocaleDateString("pt-BR")
+}
+
+function formatarNomeVariavel(variavel) {
+    if (!variavel) return "Variável"
+
+    if (variavel.toLowerCase() === "ph") return "pH"
+
+    return variavel.charAt(0).toUpperCase() + variavel.slice(1)
+}
+
+function KPIComparacao({ titulo, periodo, unidade, classe }) {
+    const mediaValida =
+        periodo?.media !== null &&
+        periodo?.media !== undefined &&
+        periodo?.media !== "" &&
+        Number.isFinite(Number(periodo.media))
+
+    const registrosValidos =
+        periodo?.registros_validos !== null &&
+        periodo?.registros_validos !== undefined &&
+        Number.isSafeInteger(Number(periodo.registros_validos)) &&
+        Number(periodo.registros_validos) >= 0
+
+    return (
+        <div className={`${styles.kpiComparacaoCard} ${classe}`}>
+            <div className={styles.kpiCabecalho}>
+                <span>{titulo}</span>
+            </div>
+
+            <div className={styles.kpiDatas}>
+                <span>
+                    {formatarDataComparacao(periodo?.inicio)}
+                </span>
+
+                <span className={styles.kpiSeparador}>
+                    até
+                </span>
+
+                <span>
+                    {formatarDataComparacao(periodo?.fim)}
+                </span>
+            </div>
+
+            <div className={styles.kpiValorContainer}>
+                <strong className={styles.kpiValor}>
+                    {mediaValida
+                        ? formatarNumero(periodo.media)
+                        : "—"}
+                </strong>
+
+                {unidade && (
+                    <span className={styles.kpiUnidade}>
+                        {unidade}
+                    </span>
+                )}
+            </div>
+
+            <span className={styles.kpiDescricao}>
+                Média registrada
+            </span>
+
+            <div className={styles.kpiRegistros}>
+                <span>Registros válidos</span>
+
+                <strong>
+                    {registrosValidos
+                        ? formatarNumero(periodo.registros_validos)
+                        : "—"}
+                </strong>
+            </div>
+        </div>
+    )
+}
+
+function KPIDiferenca({ valor, unidade }) {
+    const diferencaValida =
+        valor !== null &&
+        valor !== undefined &&
+        valor !== "" &&
+        Number.isFinite(Number(valor)) &&
+        Number(valor) >= 0
+
+    return (
+        <div className={`${styles.kpiComparacaoCard} ${styles.kpiDiferencaCard}`}>
+            <div className={styles.kpiCabecalho}>
+                <span>Diferença absoluta</span>
+            </div>
+
+            <div className={styles.kpiValorContainer}>
+                <strong className={styles.kpiDiferencaValor}>
+                    {diferencaValida
+                        ? formatarNumero(valor)
+                        : "—"}
+                </strong>
+
+                {unidade && (
+                    <span className={styles.kpiUnidade}>
+                        {unidade}
+                    </span>
+                )}
+            </div>
+
+            <span className={styles.kpiDescricao}>
+                Diferença entre as médias dos períodos
+            </span>
+        </div>
+    )
+}
+
+function ResultadoComparacao({ dados }) {
+    if (!dados?.periodo_1 || !dados?.periodo_2) {
+        return (
+            <p className={styles.qualidadeAviso} role="status">
+                Os dados recebidos não possuem os dois períodos
+                necessários para a comparação.
+            </p>
+        )
+    }
+
+    const unidade = dados.unidade || ""
+    const variavel = formatarNomeVariavel(dados.variavel)
+
+    return (
+        <div className={styles.resultadoComparacao}>
+            <div className={styles.resultadoComparacaoCabecalho}>
+                <h4>Comparação de {variavel}</h4>
+
+                <p>
+                    Médias registradas nos dois períodos selecionados.
+                </p>
+            </div>
+
+            <div className={styles.comparacaoKPIGrid}>
+                <KPIComparacao
+                    titulo="Período 1"
+                    periodo={dados.periodo_1}
+                    unidade={unidade}
+                    classe={styles.kpiPeriodo1}
+                />
+
+                <KPIComparacao
+                    titulo="Período 2"
+                    periodo={dados.periodo_2}
+                    unidade={unidade}
+                    classe={styles.kpiPeriodo2}
+                />
+
+                <KPIDiferenca
+                    valor={dados.diferenca_absoluta}
+                    unidade={unidade}
+                />
+            </div>
+        </div>
     )
 }
 
@@ -681,8 +858,9 @@ function Historico() {
                 <div className={styles.filtrosCard}>
                     <div className={styles.filtrosInputs}>
                         <div className={styles.campo}>
-                            <label className={styles.label}>Data de Início</label>
+                            <label className={styles.label} for="dataInicio">Data de Início</label>
                             <input
+                                id="dataInicio"
                                 className={styles.inputDate}
                                 type="date"
                                 value={dataInicio}
@@ -690,8 +868,9 @@ function Historico() {
                             />
                         </div>
                         <div className={styles.campo}>
-                            <label className={styles.label}>Data Final</label>
+                            <label className={styles.label} for="dataFinal">Data Final</label>
                             <input
+                                id="dataFinal"
                                 className={styles.inputDate}
                                 type="date"
                                 value={dataFinal}
@@ -861,10 +1040,7 @@ function Historico() {
 
                 <section className={styles.analiseSection}>
 
-                    <div>
-                        <h3 className={styles.subtituloSecao}>Análise das medições</h3>
-                        {/* <p>Equipamento: {equipamento.nome} - Identificador: {equipamento.identificador}</p> */}
-                    </div>
+                    <h3 className={styles.subtituloSecao}>Análise das medições</h3>
 
                     <div className={styles.qualidadeCard}>
                         <div className={styles.qualidadeCabecalho}>
@@ -934,18 +1110,24 @@ function Historico() {
                         <div className={styles.filtrosCard}>
                             <div className={styles.filtrosInputs}>
                                 <div className={styles.campoVar}>
-                                    <label className={styles.label}>Variável</label>
-                                    <input
+                                    <label className={styles.label} for="variavel">Variável</label>
+                                    <select
+                                        id="variavel"
                                         className={styles.inputDate}
                                         // type="var"
                                         // value={variável} 
                                         // onChange={variavel}
-                                    />
+                                    >
+                                        <option value="">Selecione...</option>
+                                        <option value="pH">pH</option>
+                                        <option value="Temperatura">Temperatura</option>
+                                    </select>
                                 </div>
 
                                 <div className={styles.campo}>
-                                    <label className={styles.label}>Data de Início</label>
+                                    <label className={styles.label} for="dataInicioResumo">Data de Início</label>
                                     <input
+                                        id="dataInicioResumo"
                                         className={styles.inputDate}
                                         type="date"
                                         value={dataInicioR}
@@ -953,8 +1135,9 @@ function Historico() {
                                     />
                                 </div>
                                 <div className={styles.campo}>
-                                    <label className={styles.label}>Data Final</label>
+                                    <label className={styles.label} for="dataFinalResumo">Data Final</label>
                                     <input
+                                        id="dataFinalResumo"
                                         className={styles.inputDate}
                                         type="date"
                                         value={dataFinalR}
@@ -985,18 +1168,24 @@ function Historico() {
                         <div className={styles.filtrosGrid}>
                             
                             <div className={styles.campoVar}>
-                                <label className={styles.label}>Variável</label>
-                                <input
+                                <label className={styles.label} for="variavel">Variável</label>
+                                <select
+                                    id="variavel"
                                     className={styles.inputDate}
                                     // type="var"
                                     // value={variável} 
                                     // onChange={variavel}
-                                />
+                                >
+                                    <option value="">Selecione...</option>
+                                    <option value="pH">pH</option>
+                                    <option value="Temperatura">Temperatura</option>
+                                </select>
                             </div>
 
                             <div className={styles.campo}>
-                                <label className={styles.label}>Período 1: Início</label>
+                                <label className={styles.label} for="dataInicioComparação1">Período 1: Início</label>
                                 <input
+                                    id="dataInicioComparação1"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataInicioP1}
@@ -1004,8 +1193,9 @@ function Historico() {
                                 />
                             </div>
                             <div className={styles.campo}>
-                                <label className={styles.label}>Período 1: Final</label>
+                                <label className={styles.label} for="dataFinalComparação1">Período 1: Final</label>
                                 <input
+                                    id="dataFinalComparação1"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataFinalP1}
@@ -1014,8 +1204,9 @@ function Historico() {
                             </div>
 
                             <div className={`${styles.campo} ${styles.periodoInicial2}`}>
-                                <label className={styles.label}>Período 2: Início</label>
+                                <label className={styles.label} for="dataInicialComparação2">Período 2: Início</label>
                                 <input
+                                    id="dataInicialComparação2"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataInicioP2}
@@ -1023,8 +1214,9 @@ function Historico() {
                                 />
                             </div>
                             <div className={`${styles.campo} ${styles.periodoFinal2}`}>
-                                <label className={styles.label}>Período 2: Final</label>
+                                <label className={styles.label} for="dataFinalComparação2">Período 2: Final</label>
                                 <input
+                                    id="dataFinalComparação2"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataFinalP2}
@@ -1050,29 +1242,39 @@ function Historico() {
                         </div>
                     )}
 
-                    <AlertasConsulta
-                        carregando={carregandoResumo}
-                        erro={erroResumo}
-                        mensagemCarregamento="Gerando resumo estatístico..."
-                    />
+                    {abaAnalise === "resumo" && (<>
+                        <AlertasConsulta
+                            carregando={carregandoResumo}
+                            erro={erroResumo}
+                            mensagemCarregamento="Gerando resumo estatístico..."
+                        />
 
-                    <AlertasConsulta
-                        carregando={carregandoComparacao}
-                        erro={erroComparacao}
-                        mensagemCarregamento="Comparando períodos..."
-                    />
+                        {resultadoResumo && !carregandoResumo && (
+                            <div className={styles.resumoGraficosGrid}>
+                                <GraficoFaixaEstatistica
+                                    dados={resultadoResumo}
+                                />
 
-                    {abaAnalise === "resumo" && resultadoResumo && !carregandoResumo && (
-                        <div className={styles.resumoGraficosGrid}>
-                            <GraficoFaixaEstatistica
-                                dados={resultadoResumo}
+                                <GraficoQualidadeRegistros
+                                    dados={resultadoResumo.qualidade_dos_dados}
+                                />
+                            </div>
+                        )} 
+                    </>)}
+
+                    {abaAnalise === "comparacao" && (<>
+                        <AlertasConsulta
+                            carregando={carregandoComparacao}
+                            erro={erroComparacao}
+                            mensagemCarregamento="Comparando períodos..."
+                        />
+
+                        {resultadoComparacao && !carregandoComparacao && (
+                            <ResultadoComparacao
+                                dados={resultadoComparacao}
                             />
-
-                            <GraficoQualidadeRegistros
-                                dados={resultadoResumo.qualidade_dos_dados}
-                            />
-                        </div>
-                    )}
+                        )}
+                    </>)}
 
                 </section>
 
