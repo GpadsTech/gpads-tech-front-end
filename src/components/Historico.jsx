@@ -1147,7 +1147,7 @@ function Historico() {
                             </div>
                             <div className={styles.actions}>
                                 <button 
-                                    className={styles.btnPesquisar}
+                                    className={`${styles.btnPesquisar} ${styles.btnGerarResumo}`}
                                     onClick={pesquisarResumo}
                                     disabled={carregandoResumo}
                                 >
@@ -1224,9 +1224,9 @@ function Historico() {
                                 />
                             </div>
 
-                            <div className={styles.actions}>
+                            <div className={`${styles.actions} ${styles.actionsComparacao}`}>
                                 <button 
-                                    className={styles.btnPesquisar}
+                                    className={`${styles.btnPesquisar} ${styles.btnComparacao}`}
                                     onClick={pesquisarComparacao}
                                     disabled={carregandoComparacao}
                                 >
