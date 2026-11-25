@@ -2,7 +2,8 @@ import { getEquipmentHistory } from "../services/telemetryService.js"
 import { useState } from "react"
 import styles from './Historico.module.css'
 import { Link, useParams } from 'react-router-dom'
-import { baixarHistoricoCSV } from '../services/chatServices';
+import { baixarHistoricoCSV } from '../services/chatServices'
+import { useAnaliseResumo } from '../hooks/useAnaliseResumo'
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -66,13 +67,13 @@ function GraficoHistorico({ titulo, dados, dataKey, unidade = '', corLinha = "#0
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={dadosFormatados} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" />
-                    <XAxis 
-                        dataKey="horaFormatada" 
-                        tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.4)' }} 
+                    <XAxis
+                        dataKey="horaFormatada"
+                        tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.4)' }}
                         stroke="rgba(255, 255, 255, 0.2)"
                     />
-                    <YAxis 
-                        tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.4)' }} 
+                    <YAxis
+                        tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.4)' }}
                         stroke="rgba(255, 255, 255, 0.2)"
                     />
                     <Tooltip content={<TooltipPersonalizado unidade={unidade} />} />
@@ -242,7 +243,7 @@ function GraficoQualidadeRegistros({ dados }) {
             maximumFractionDigits: 2
         })}%`
     }
-    
+
     function calcularLargura(valor) {
         if (total === 0) return "0%"
 
@@ -278,21 +279,21 @@ function GraficoQualidadeRegistros({ dados }) {
                         {validos > 0 && (
                             <span
                                 className={styles.segmentoValido}
-                                style={{width: calcularLargura(validos)}}
+                                style={{ width: calcularLargura(validos) }}
                             />
                         )}
 
                         {nulos > 0 && (
                             <span
                                 className={styles.segmentoNulo}
-                                style={{width: calcularLargura(nulos)}}
+                                style={{ width: calcularLargura(nulos) }}
                             />
                         )}
 
                         {invalidos > 0 && (
                             <span
                                 className={styles.segmentoInvalido}
-                                style={{width: calcularLargura(invalidos)}}
+                                style={{ width: calcularLargura(invalidos) }}
                             />
                         )}
                     </div>
@@ -367,7 +368,7 @@ function AlertasConsulta({
                 <div
                     className={styles.errorBox}
                     role="alert"
-                >   
+                >
                     <svg
                         viewBox="0 0 24 24"
                         fill="none"
@@ -565,27 +566,33 @@ function ResultadoComparacao({ dados }) {
 
 function Historico() {
     const { identifier } = useParams()
+    const {
+        resumo: resultadoResumo,
+        carregandoResumo,
+        erroResumo,
+        semDadosResumo,
+        buscarResumo
+    } = useAnaliseResumo(identifier)
+
     const [dataInicio, setDatainicio] = useState('')
     const [dataFinal, setDataFinal] = useState('')
+    const [variavelResumo, setVariavelResumo] = useState('')
     const [dataInicioR, setDatainicioR] = useState('')
     const [dataFinalR, setDataFinalR] = useState('')
     const [dataInicioP1, setDatainicioP1] = useState('')
     const [dataFinalP1, setDataFinalP1] = useState('')
     const [dataInicioP2, setDatainicioP2] = useState('')
     const [dataFinalP2, setDataFinalP2] = useState('')
-    
+
     const [dados, setDados] = useState([])
     const [equipamento, setEquipamento] = useState(null)
     const [localizacaoSelecionada, setLocalizacaoSelecionada] = useState(null)
-    const [resultadoResumo, setResultadoResumo] = useState(null)
     const [resultadoComparacao, setResultadoComparacao] = useState(null)
-    
+
     const [carregandoPesquisa, setCarregandoPesquisa] = useState(false)
     const [erroPesquisa, setErroPesquisa] = useState('')
     const [carregandoCSV, setCarregandoCSV] = useState(false)
     const [erroCSV, setErroCSV] = useState('')
-    const [carregandoResumo, setCarregandoResumo] = useState(false)
-    const [erroResumo, setErroResumo] = useState('')
     const [carregandoComparacao, setCarregandoComparacao] = useState(false)
     const [erroComparacao, setErroComparacao] = useState('')
 
@@ -618,7 +625,6 @@ function Historico() {
         setCarregandoPesquisa(true)
         setErroPesquisa('')
         try {
-
             const parametros = new URLSearchParams()
             if (dataInicio) parametros.append('inicio', dataInicio)
             if (dataFinal) parametros.append('fim', dataFinal)
@@ -641,66 +647,12 @@ function Historico() {
         setCarregandoCSV(true)
         setErroCSV('')
         try {
-
-            await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal);
+            await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal)
         } catch (error) {
-            console.error("Erro ao exportar CSV:", error);
-            setErroCSV(error?.message || "Não foi possível exportar o CSV.");
+            console.error("Erro ao exportar CSV:", error)
+            setErroCSV(error?.message || "Não foi possível exportar o CSV.")
         } finally {
             setCarregandoCSV(false)
-        }
-    }
-
-    // Função com dados mockados para testes
-    const pesquisarResumo = async () => {
-        setCarregandoResumo(true)
-        setErroResumo('')
-
-        try {
-            await new Promise(resolve => setTimeout(resolve, 1000))
-
-            if (!dataInicioR || !dataFinalR) {
-                throw new Error('Informe as datas inicial e final.')
-            }
-
-            if (dataInicioR > dataFinalR) {
-                throw new Error('A data inicial não pode ser posterior à data final.')
-            }
-
-            // Fixture sintética: resposta simulada da API
-            const respostaMockada = {
-                equipamento_id: Number(identifier),
-                variavel: "ph",
-                unidade: "pH",
-
-                periodo: {
-                    inicio: dataInicioR,
-                    fim: dataFinalR
-                },
-
-                estatisticas: {
-                    media: 5.61,
-                    minimo: 5.54,
-                    maximo: 5.82
-                },
-
-                qualidade_dos_dados: {
-                    registros_analisados: 72,
-                    registros_validos: 50,
-                    registros_nulos: 10,
-                    registros_invalidos: 12,
-                    registros_utilizados: 50
-                }
-            }
-
-            setResultadoResumo(respostaMockada)
-
-        } catch (error) {
-            setErroResumo(error.message)
-            setResultadoResumo(null)
-
-        } finally {
-            setCarregandoResumo(false)
         }
     }
 
@@ -768,80 +720,80 @@ function Historico() {
 
     // Fixtures sintéticas: utilizadas somente durante o desenvolvimento.
     const qualidadeMockadas = {
-    atualizado: {
-        equipamento_id: Number(identifier),
-        ultima_medicao_valida: "2026-09-23 08:25:34",
-        idade_minutos: 15,
-        status: "atualizado",
-        registros_nulos: 5,
-        registros_invalidos: 2,
-    },
+        atualizado: {
+            equipamento_id: Number(identifier),
+            ultima_medicao_valida: "2026-09-23 08:25:34",
+            idade_minutos: 15,
+            status: "atualizado",
+            registros_nulos: 5,
+            registros_invalidos: 2,
+        },
 
-    desatualizado: {
-        equipamento_id: Number(identifier),
-        ultima_medicao_valida: "2026-09-23 08:25:34",
-        idade_minutos: 180,
-        status: "desatualizado",
-        registros_nulos: 5,
-        registros_invalidos: 2,
-    },
+        desatualizado: {
+            equipamento_id: Number(identifier),
+            ultima_medicao_valida: "2026-09-23 08:25:34",
+            idade_minutos: 180,
+            status: "desatualizado",
+            registros_nulos: 5,
+            registros_invalidos: 2,
+        },
 
-    sem_dados: {
-        equipamento_id: Number(identifier),
-        ultima_medicao_valida: null,
-        idade_minutos: null,
-        status: "sem_dados",
-        registros_nulos: 0,
-        registros_invalidos: 0,
-    },
+        sem_dados: {
+            equipamento_id: Number(identifier),
+            ultima_medicao_valida: null,
+            idade_minutos: null,
+            status: "sem_dados",
+            registros_nulos: 0,
+            registros_invalidos: 0,
+        },
 
-    indeterminado: {
-        equipamento_id: Number(identifier),
-        ultima_medicao_valida: null,
-        idade_minutos: null,
-        status: "indeterminado",
-        registros_nulos: null,
-        registros_invalidos: null,
-    },
-    };
+        indeterminado: {
+            equipamento_id: Number(identifier),
+            ultima_medicao_valida: null,
+            idade_minutos: null,
+            status: "indeterminado",
+            registros_nulos: null,
+            registros_invalidos: null,
+        },
+    }
 
     // Altere o estado selecionado para testar os diferentes badges.
-    const qualidadeMockada = qualidadeMockadas.indeterminado;
+    const qualidadeMockada = qualidadeMockadas.indeterminado
 
     const badgesStatusQualidade = {
-    atualizado: {
-        texto: "Atualizado",
-        classe: styles.badgeAtualizado,
-        descricao: "Medições dentro do intervalo esperado",
-    },
+        atualizado: {
+            texto: "Atualizado",
+            classe: styles.badgeAtualizado,
+            descricao: "Medições dentro do intervalo esperado",
+        },
 
-    desatualizado: {
-        texto: "Desatualizado",
-        classe: styles.badgeDesatualizado,
-        descricao: "Última medição válida ultrapassou o intervalo esperado",
-    },
+        desatualizado: {
+            texto: "Desatualizado",
+            classe: styles.badgeDesatualizado,
+            descricao: "Última medição válida ultrapassou o intervalo esperado",
+        },
 
-    sem_dados: {
-        texto: "Sem dados",
-        classe: styles.badgeSemDados,
-        descricao: "Não existem medições disponíveis",
-    },
+        sem_dados: {
+            texto: "Sem dados",
+            classe: styles.badgeSemDados,
+            descricao: "Não existem medições disponíveis",
+        },
 
-    indeterminado: {
-        texto: "Indeterminado",
-        classe: styles.badgeIndeterminado,
-        descricao: "Não há informações suficientes para determinar a situação",
-    },
-    };
+        indeterminado: {
+            texto: "Indeterminado",
+            classe: styles.badgeIndeterminado,
+            descricao: "Não há informações suficientes para determinar a situação",
+        },
+    }
 
     const badgeStatus =
-    badgesStatusQualidade[qualidadeMockada.status] ??
-    badgesStatusQualidade.indeterminado;
+        badgesStatusQualidade[qualidadeMockada.status] ??
+        badgesStatusQualidade.indeterminado
 
     return (
         <div className={styles.pageContainer}>
             <div className={styles.contentWrapper}>
-                
+
                 {/* Header: Voltar e Título */}
                 <div className={styles.header}>
                     <Link to="/" className={styles.voltar}>
@@ -858,7 +810,7 @@ function Historico() {
                 <div className={styles.filtrosCard}>
                     <div className={styles.filtrosInputs}>
                         <div className={styles.campo}>
-                            <label className={styles.label} for="dataInicio">Data de Início</label>
+                            <label className={styles.label} htmlFor="dataInicio">Data de Início</label>
                             <input
                                 id="dataInicio"
                                 className={styles.inputDate}
@@ -868,7 +820,7 @@ function Historico() {
                             />
                         </div>
                         <div className={styles.campo}>
-                            <label className={styles.label} for="dataFinal">Data Final</label>
+                            <label className={styles.label} htmlFor="dataFinal">Data Final</label>
                             <input
                                 id="dataFinal"
                                 className={styles.inputDate}
@@ -879,9 +831,9 @@ function Historico() {
                         </div>
                     </div>
                     <div className={styles.actions}>
-                        <button 
+                        <button
                             className={styles.btnPesquisar}
-                            onClick={pesquisar} 
+                            onClick={pesquisar}
                             disabled={carregandoPesquisa}
                         >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -891,7 +843,7 @@ function Historico() {
                             {carregandoPesquisa ? "Buscando..." : "Pesquisar"}
                         </button>
 
-                        <button 
+                        <button
                             className={styles.btnGerarCSV}
                             onClick={handleExport}
                             disabled={carregandoCSV}
@@ -947,7 +899,7 @@ function Historico() {
                 {/* Conteúdo: Mapa e Dados */}
                 {equipamento && !carregandoPesquisa && (
                     <div className={styles.historicoContainer}>
-                        
+
                         <div className={styles.mapaCard}>
                             <h3 className={styles.subtituloSecao}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -965,7 +917,7 @@ function Historico() {
                                     <TileLayer url='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}' />
                                     <TileLayer url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}" />
                                     <TileLayer url="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}" />
-                                    
+
                                     {localizacoes.map((localizacao, index) => (
                                         <Marker
                                             key={index}
@@ -975,12 +927,12 @@ function Historico() {
                                         >
                                             <Popup className={styles.customPopup}>
                                                 <div className={styles.popupContent}>
-                                                    <strong>{equipamento.nome}</strong><br/><br/>
-                                                    Lat: {localizacao.latitude}<br/>
-                                                    Lng: {localizacao.longitude}<br/><br/>
-                                                    <strong>Início:</strong><br/>
-                                                    {localizacao.inicio ? new Date(localizacao.inicio).toLocaleString('pt-BR') : 'Não informado'}<br/>
-                                                    <strong>Fim:</strong><br/>
+                                                    <strong>{equipamento.nome}</strong><br /><br />
+                                                    Lat: {localizacao.latitude}<br />
+                                                    Lng: {localizacao.longitude}<br /><br />
+                                                    <strong>Início:</strong><br />
+                                                    {localizacao.inicio ? new Date(localizacao.inicio).toLocaleString('pt-BR') : 'Não informado'}<br />
+                                                    <strong>Fim:</strong><br />
                                                     {localizacao.fim ? new Date(localizacao.fim).toLocaleString('pt-BR') : 'Localização atual'}
                                                 </div>
                                             </Popup>
@@ -997,11 +949,11 @@ function Historico() {
                                     <div className={styles.infoItem}><span>Latitude:</span> <strong>{localizacaoSelecionada.latitude}</strong></div>
                                     <div className={styles.infoItem}><span>Longitude:</span> <strong>{localizacaoSelecionada.longitude}</strong></div>
                                     <div className={styles.infoItem}>
-                                        <span>Início:</span> 
+                                        <span>Início:</span>
                                         <strong>{localizacaoSelecionada.inicio ? new Date(localizacaoSelecionada.inicio).toLocaleString('pt-BR') : 'Não informado'}</strong>
                                     </div>
                                     <div className={styles.infoItem}>
-                                        <span>Fim:</span> 
+                                        <span>Fim:</span>
                                         <strong>{localizacaoSelecionada.fim ? new Date(localizacaoSelecionada.fim).toLocaleString('pt-BR') : 'Localização atual'}</strong>
                                     </div>
                                     <div className={styles.infoItem}><span>Leituras encontradas:</span> <strong>{dadosDaLocalizacaoSelecionada.length}</strong></div>
@@ -1070,8 +1022,8 @@ function Historico() {
                                 <span>Tempo desde a última medição</span>
                                 <strong>
                                     {qualidadeMockada.idade_minutos != null
-                                    ? `${qualidadeMockada.idade_minutos} minutos`
-                                    : "Não disponível"}
+                                        ? `${qualidadeMockada.idade_minutos} minutos`
+                                        : "Não disponível"}
                                 </strong>
                             </div>
                         </div>
@@ -1110,22 +1062,21 @@ function Historico() {
                         <div className={styles.filtrosCard}>
                             <div className={styles.filtrosInputs}>
                                 <div className={styles.campoVar}>
-                                    <label className={styles.label} for="variavel">Variável</label>
+                                    <label className={styles.label} htmlFor="variavelResumo">Variável</label>
                                     <select
-                                        id="variavel"
+                                        id="variavelResumo"
                                         className={styles.inputDate}
-                                        // type="var"
-                                        // value={variável} 
-                                        // onChange={variavel}
+                                        value={variavelResumo}
+                                        onChange={(e) => setVariavelResumo(e.target.value)}
                                     >
                                         <option value="">Selecione...</option>
-                                        <option value="pH">pH</option>
-                                        <option value="Temperatura">Temperatura</option>
+                                        <option value="ph">pH</option>
+                                        <option value="temperatura">Temperatura</option>
                                     </select>
                                 </div>
 
                                 <div className={styles.campo}>
-                                    <label className={styles.label} for="dataInicioResumo">Data de Início</label>
+                                    <label className={styles.label} htmlFor="dataInicioResumo">Data de Início</label>
                                     <input
                                         id="dataInicioResumo"
                                         className={styles.inputDate}
@@ -1135,7 +1086,7 @@ function Historico() {
                                     />
                                 </div>
                                 <div className={styles.campo}>
-                                    <label className={styles.label} for="dataFinalResumo">Data Final</label>
+                                    <label className={styles.label} htmlFor="dataFinalResumo">Data Final</label>
                                     <input
                                         id="dataFinalResumo"
                                         className={styles.inputDate}
@@ -1146,9 +1097,15 @@ function Historico() {
                                 </div>
                             </div>
                             <div className={styles.actions}>
-                                <button 
+                                <button
                                     className={`${styles.btnPesquisar} ${styles.btnGerarResumo}`}
-                                    onClick={pesquisarResumo}
+                                    onClick={() =>
+                                        buscarResumo({
+                                            variavel: variavelResumo,
+                                            inicio: dataInicioR,
+                                            fim: dataFinalR
+                                        })
+                                    }
                                     disabled={carregandoResumo}
                                 >
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1166,15 +1123,12 @@ function Historico() {
                     {abaAnalise === "comparacao" && (
                         // Filtros: Comparação
                         <div className={styles.filtrosGrid}>
-                            
+
                             <div className={styles.campoVar}>
-                                <label className={styles.label} for="variavel">Variável</label>
+                                <label className={styles.label} htmlFor="variavelComparacao">Variável</label>
                                 <select
-                                    id="variavel"
+                                    id="variavelComparacao"
                                     className={styles.inputDate}
-                                    // type="var"
-                                    // value={variável} 
-                                    // onChange={variavel}
                                 >
                                     <option value="">Selecione...</option>
                                     <option value="pH">pH</option>
@@ -1183,9 +1137,9 @@ function Historico() {
                             </div>
 
                             <div className={styles.campo}>
-                                <label className={styles.label} for="dataInicioComparação1">Período 1: Início</label>
+                                <label className={styles.label} htmlFor="dataInicioComparacao1">Período 1: Início</label>
                                 <input
-                                    id="dataInicioComparação1"
+                                    id="dataInicioComparacao1"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataInicioP1}
@@ -1193,9 +1147,9 @@ function Historico() {
                                 />
                             </div>
                             <div className={styles.campo}>
-                                <label className={styles.label} for="dataFinalComparação1">Período 1: Final</label>
+                                <label className={styles.label} htmlFor="dataFinalComparacao1">Período 1: Final</label>
                                 <input
-                                    id="dataFinalComparação1"
+                                    id="dataFinalComparacao1"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataFinalP1}
@@ -1204,9 +1158,9 @@ function Historico() {
                             </div>
 
                             <div className={`${styles.campo} ${styles.periodoInicial2}`}>
-                                <label className={styles.label} for="dataInicialComparação2">Período 2: Início</label>
+                                <label className={styles.label} htmlFor="dataInicialComparacao2">Período 2: Início</label>
                                 <input
-                                    id="dataInicialComparação2"
+                                    id="dataInicialComparacao2"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataInicioP2}
@@ -1214,9 +1168,9 @@ function Historico() {
                                 />
                             </div>
                             <div className={`${styles.campo} ${styles.periodoFinal2}`}>
-                                <label className={styles.label} for="dataFinalComparação2">Período 2: Final</label>
+                                <label className={styles.label} htmlFor="dataFinalComparacao2">Período 2: Final</label>
                                 <input
-                                    id="dataFinalComparação2"
+                                    id="dataFinalComparacao2"
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataFinalP2}
@@ -1225,7 +1179,7 @@ function Historico() {
                             </div>
 
                             <div className={`${styles.actions} ${styles.actionsComparacao}`}>
-                                <button 
+                                <button
                                     className={`${styles.btnPesquisar} ${styles.btnComparacao}`}
                                     onClick={pesquisarComparacao}
                                     disabled={carregandoComparacao}
@@ -1242,39 +1196,49 @@ function Historico() {
                         </div>
                     )}
 
-                    {abaAnalise === "resumo" && (<>
-                        <AlertasConsulta
-                            carregando={carregandoResumo}
-                            erro={erroResumo}
-                            mensagemCarregamento="Gerando resumo estatístico..."
-                        />
-
-                        {resultadoResumo && !carregandoResumo && (
-                            <div className={styles.resumoGraficosGrid}>
-                                <GraficoFaixaEstatistica
-                                    dados={resultadoResumo}
-                                />
-
-                                <GraficoQualidadeRegistros
-                                    dados={resultadoResumo.qualidade_dos_dados}
-                                />
-                            </div>
-                        )} 
-                    </>)}
-
-                    {abaAnalise === "comparacao" && (<>
-                        <AlertasConsulta
-                            carregando={carregandoComparacao}
-                            erro={erroComparacao}
-                            mensagemCarregamento="Comparando períodos..."
-                        />
-
-                        {resultadoComparacao && !carregandoComparacao && (
-                            <ResultadoComparacao
-                                dados={resultadoComparacao}
+                    {abaAnalise === "resumo" && (
+                        <>
+                            <AlertasConsulta
+                                carregando={carregandoResumo}
+                                erro={erroResumo}
+                                mensagemCarregamento="Gerando resumo estatístico..."
                             />
-                        )}
-                    </>)}
+
+                            {semDadosResumo && !carregandoResumo && !erroResumo && (
+                                <p className={styles.qualidadeSemDados} role="status">
+                                    Nenhum registro foi encontrado para a variável e o período selecionados.
+                                </p>
+                            )}
+
+                            {resultadoResumo && !carregandoResumo && (
+                                <div className={styles.resumoGraficosGrid}>
+                                    <GraficoFaixaEstatistica
+                                        dados={resultadoResumo}
+                                    />
+
+                                    <GraficoQualidadeRegistros
+                                        dados={resultadoResumo.qualidade_dos_dados}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {abaAnalise === "comparacao" && (
+                        <>
+                            <AlertasConsulta
+                                carregando={carregandoComparacao}
+                                erro={erroComparacao}
+                                mensagemCarregamento="Comparando períodos..."
+                            />
+
+                            {resultadoComparacao && !carregandoComparacao && (
+                                <ResultadoComparacao
+                                    dados={resultadoComparacao}
+                                />
+                            )}
+                        </>
+                    )}
 
                 </section>
 
