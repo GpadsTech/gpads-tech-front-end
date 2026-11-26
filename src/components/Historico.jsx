@@ -4,6 +4,7 @@ import styles from './Historico.module.css'
 import { Link, useParams } from 'react-router-dom'
 import { baixarHistoricoCSV } from '../services/chatServices'
 import { useAnaliseResumo } from '../hooks/useAnaliseResumo'
+import { useAnaliseComparacao } from '../hooks/useAnaliseComparacao'
 import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext'
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
@@ -12,7 +13,7 @@ import L from 'leaflet'
 
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
-    Tooltip, ResponsiveContainer
+    Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
 
 const customNeonMarker = L.divIcon({
@@ -415,6 +416,15 @@ function formatarNomeVariavel(variavel) {
     if (!variavel) return "Variável"
 
     if (variavel.toLowerCase() === "ph") return "pH"
+    if (variavel === "turbidez_ntu") return "Turbidez"
+    if (variavel === "sensor_uv_v") return "Sensor UV"
+    if (variavel === "adc") return "ADC"
+    if (variavel === "rpm") return "RPM"
+    if (variavel === "ar") return "Qualidade do ar"
+    if (variavel === "gas") return "Gás"
+    if (variavel === "luz") return "Luminosidade"
+    if (variavel === "pressao") return "Pressão"
+    if (variavel === "volt") return "Tensão Elétrica"
 
     return variavel.charAt(0).toUpperCase() + variavel.slice(1)
 }
@@ -530,27 +540,28 @@ function ResultadoComparacao({ dados }) {
 
     const unidade = dados.unidade || ""
     const variavel = formatarNomeVariavel(dados.variavel)
+    const labelUnidade = unidade ? ` (${unidade})` : ""
 
     return (
         <div className={styles.resultadoComparacao}>
             <div className={styles.resultadoComparacaoCabecalho}>
-                <h4>Comparação de {variavel}</h4>
+                <h4>Comparação de {variavel}{labelUnidade}</h4>
 
                 <p>
-                    Médias registradas nos dois períodos selecionados.
+                    Médias e séries registradas nos períodos atual e anterior.
                 </p>
             </div>
 
             <div className={styles.comparacaoKPIGrid}>
                 <KPIComparacao
-                    titulo="Período 1"
+                    titulo="Período Atual"
                     periodo={dados.periodo_1}
                     unidade={unidade}
                     classe={styles.kpiPeriodo1}
                 />
 
                 <KPIComparacao
-                    titulo="Período 2"
+                    titulo="Período Anterior"
                     periodo={dados.periodo_2}
                     unidade={unidade}
                     classe={styles.kpiPeriodo2}
@@ -561,6 +572,65 @@ function ResultadoComparacao({ dados }) {
                     unidade={unidade}
                 />
             </div>
+
+            {Array.isArray(dados.seriesAlinhadas) && dados.seriesAlinhadas.length > 0 && (
+                <div className={styles.graficoCard} style={{ marginTop: '1rem' }}>
+                    <h4 className={styles.tituloGrafico}>
+                        Série Comparativa — {variavel}{labelUnidade}
+                    </h4>
+                    <ResponsiveContainer width="100%" height={280}>
+                        <LineChart
+                            data={dados.seriesAlinhadas}
+                            margin={{ top: 10, right: 16, left: -10, bottom: 0 }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" />
+                            <XAxis
+                                dataKey="ponto"
+                                tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.5)' }}
+                                stroke="rgba(255, 255, 255, 0.2)"
+                            />
+                            <YAxis
+                                unit={unidade ? ` ${unidade}` : ''}
+                                tick={{ fontSize: 11, fill: 'rgba(255, 255, 255, 0.5)' }}
+                                stroke="rgba(255, 255, 255, 0.2)"
+                            />
+                            <Tooltip
+                                formatter={(value, name) => [
+                                    value !== null ? `${formatarNumero(value)} ${unidade}` : 'Sem leitura',
+                                    name,
+                                ]}
+                                contentStyle={{
+                                    backgroundColor: 'rgba(3, 14, 30, 0.95)',
+                                    border: '1px solid rgba(0, 217, 235, 0.5)',
+                                    borderRadius: '8px',
+                                    color: '#fff',
+                                }}
+                            />
+                            <Legend />
+                            <Line
+                                type="monotone"
+                                dataKey="atual"
+                                name={`Período Atual${labelUnidade}`}
+                                stroke="#00e5ff"
+                                strokeWidth={2.5}
+                                dot={false}
+                                connectNulls={false}
+                                isAnimationActive={false}
+                            />
+                            <Line
+                                type="monotone"
+                                dataKey="anterior"
+                                name={`Período Anterior${labelUnidade}`}
+                                stroke="#a259f7"
+                                strokeWidth={2.5}
+                                dot={false}
+                                connectNulls={false}
+                                isAnimationActive={false}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
+            )}
         </div>
     )
 }
@@ -589,7 +659,16 @@ function Historico() {
         buscarResumo
     } = useAnaliseResumo(identifier)
 
+    const {
+        comparacao: resultadoComparacao,
+        carregandoComparacao,
+        erroComparacao,
+        buscarComparacao,
+        limparComparacao,
+    } = useAnaliseComparacao(identifier)
+
     const [variavelResumo, setVariavelResumo] = useState('')
+    const [variavelComparacao, setVariavelComparacao] = useState('')
     const [dataInicioR, setDatainicioR] = useState('')
     const [dataFinalR, setDataFinalR] = useState('')
     const [dataInicioP1, setDatainicioP1] = useState('')
@@ -598,14 +677,11 @@ function Historico() {
     const [dataFinalP2, setDataFinalP2] = useState('')
 
     const [localizacaoSelecionada, setLocalizacaoSelecionada] = useState(null)
-    const [resultadoComparacao, setResultadoComparacao] = useState(null)
 
     const [carregandoPesquisa, setCarregandoPesquisa] = useState(false)
     const [erroPesquisa, setErroPesquisa] = useState('')
     const [carregandoCSV, setCarregandoCSV] = useState(false)
     const [erroCSV, setErroCSV] = useState('')
-    const [carregandoComparacao, setCarregandoComparacao] = useState(false)
-    const [erroComparacao, setErroComparacao] = useState('')
 
     const [abaAnalise, setAbaAnalise] = useState("resumo")
 
@@ -615,6 +691,7 @@ function Historico() {
             selecionarEquipamento(identifier)
         }
         setVariavelResumo('')
+        setVariavelComparacao('')
         setDatainicioR('')
         setDataFinalR('')
         setDatainicioP1('')
@@ -622,11 +699,10 @@ function Historico() {
         setDatainicioP2('')
         setDataFinalP2('')
         setLocalizacaoSelecionada(null)
-        setResultadoComparacao(null)
+        limparComparacao()
         setErroPesquisa('')
         setErroCSV('')
-        setErroComparacao('')
-    }, [identifier, equipamentoId, selecionarEquipamento])
+    }, [identifier, equipamentoId, selecionarEquipamento, limparComparacao])
 
     const localizacoes = []
     dados.forEach((item) => {
@@ -655,13 +731,9 @@ function Historico() {
         setCarregandoPesquisa(true)
         setErroPesquisa('')
         try {
-            // Valida, formata YYYY-MM-DD e salva no periodoAplicado
             const { searchParams } = aplicarPesquisaPeriodo()
-
-            // Mantém a assinatura exata do seu serviço
             const data = await getEquipmentHistory(identifier, searchParams)
 
-            // Salva no estado compartilhado (será limpo ao trocar de equipamento)
             setHistoricoAplicado({
                 equipamento: data.equipamento,
                 dados: data.dados
@@ -687,7 +759,6 @@ function Historico() {
         setErroCSV('')
         try {
             const idAlvo = equipamento?.identificador || identifier
-            // Exportação usa a pesquisa aplicada, mesmo se o formulário mudar depois
             await baixarHistoricoCSV(
                 idAlvo,
                 periodoAplicado.inicio,
@@ -698,68 +769,6 @@ function Historico() {
             setErroCSV(error?.message || "Não foi possível exportar o CSV.")
         } finally {
             setCarregandoCSV(false)
-        }
-    }
-
-    // Função com dados mockados para testes
-    const pesquisarComparacao = async () => {
-        setCarregandoComparacao(true)
-        setErroComparacao('')
-
-        try {
-            await new Promise(resolve => setTimeout(resolve, 1200))
-
-            if (!dataInicioP1 || !dataFinalP1 || !dataInicioP2 || !dataFinalP2) {
-                throw new Error('Preencha todas as datas dos dois períodos.')
-            }
-
-            if (dataInicioP1 > dataFinalP1 || dataInicioP2 > dataFinalP2) {
-                throw new Error('Verifique as datas informadas.')
-            }
-
-            const duracaoP1 =
-                new Date(`${dataFinalP1}T00:00:00`) -
-                new Date(`${dataInicioP1}T00:00:00`)
-
-            const duracaoP2 =
-                new Date(`${dataFinalP2}T00:00:00`) -
-                new Date(`${dataInicioP2}T00:00:00`)
-
-            if (duracaoP1 !== duracaoP2) {
-                throw new Error('Os dois períodos devem possuir a mesma duração.')
-            }
-
-            // Fixture sintética: resposta simulada da API
-            const respostaMockada = {
-                equipamento_id: Number(identifier),
-                variavel: "ph",
-                unidade: "pH",
-
-                periodo_1: {
-                    inicio: dataInicioP1,
-                    fim: dataFinalP1,
-                    media: 5.42,
-                    registros_validos: 90
-                },
-
-                periodo_2: {
-                    inicio: dataInicioP2,
-                    fim: dataFinalP2,
-                    media: 6.10,
-                    registros_validos: 85
-                },
-
-                diferenca_absoluta: 0.68
-            }
-
-            setResultadoComparacao(respostaMockada)
-
-        } catch (error) {
-            setErroComparacao(error.message)
-            setResultadoComparacao(null)
-
-        } finally {
-            setCarregandoComparacao(false)
         }
     }
 
@@ -802,7 +811,6 @@ function Historico() {
         },
     }
 
-    // Altere o estado selecionado para testar os diferentes badges.
     const qualidadeMockada = qualidadeMockadas.indeterminado
 
     const badgesStatusQualidade = {
@@ -1175,15 +1183,45 @@ function Historico() {
                                 <select
                                     id="variavelComparacao"
                                     className={styles.inputDate}
+                                    value={variavelComparacao}
+                                    onChange={(e) => {
+                                        setVariavelComparacao(e.target.value)
+                                        limparComparacao()
+                                    }}
                                 >
                                     <option value="">Selecione...</option>
-                                    <option value="pH">pH</option>
-                                    <option value="Temperatura">Temperatura</option>
+                                    {equipamento?.tipo === 'boia' ? (
+                                        <>
+                                            <option value="ph">pH</option>
+                                            <option value="turbidez_ntu">Turbidez (NTU)</option>
+                                            <option value="sensor_uv_v">Sensor UV (V)</option>
+                                            <option value="adc">ADC</option>
+                                        </>
+                                    ) : equipamento?.tipo === 'estacao' ? (
+                                        <>
+                                            <option value="temperatura">Temperatura (°C)</option>
+                                            <option value="umidade">Umidade (%)</option>
+                                            <option value="pressao">Pressão (hPa)</option>
+                                            <option value="vento">Vento (m/s)</option>
+                                            <option value="rpm">RPM</option>
+                                            <option value="luz">Luminosidade (lx)</option>
+                                            <option value="ar">Qualidade do ar (AQI)</option>
+                                            <option value="gas">Gás (ppm)</option>
+                                            <option value="volt">Tensão Elétrica (V)</option>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <option value="temperatura">Temperatura (°C)</option>
+                                            <option value="umidade">Umidade (%)</option>
+                                            <option value="ph">pH</option>
+                                            <option value="turbidez_ntu">Turbidez (NTU)</option>
+                                        </>
+                                    )}
                                 </select>
                             </div>
 
                             <div className={styles.campo}>
-                                <label className={styles.label} htmlFor="dataInicioComparacao1">Período 1: Início</label>
+                                <label className={styles.label} htmlFor="dataInicioComparacao1">Período Atual: Início</label>
                                 <input
                                     id="dataInicioComparacao1"
                                     className={styles.inputDate}
@@ -1193,7 +1231,7 @@ function Historico() {
                                 />
                             </div>
                             <div className={styles.campo}>
-                                <label className={styles.label} htmlFor="dataFinalComparacao1">Período 1: Final</label>
+                                <label className={styles.label} htmlFor="dataFinalComparacao1">Período Atual: Final</label>
                                 <input
                                     id="dataFinalComparacao1"
                                     className={styles.inputDate}
@@ -1204,7 +1242,7 @@ function Historico() {
                             </div>
 
                             <div className={`${styles.campo} ${styles.periodoInicial2}`}>
-                                <label className={styles.label} htmlFor="dataInicialComparacao2">Período 2: Início</label>
+                                <label className={styles.label} htmlFor="dataInicialComparacao2">Período Anterior: Início</label>
                                 <input
                                     id="dataInicialComparacao2"
                                     className={styles.inputDate}
@@ -1214,7 +1252,7 @@ function Historico() {
                                 />
                             </div>
                             <div className={`${styles.campo} ${styles.periodoFinal2}`}>
-                                <label className={styles.label} htmlFor="dataFinalComparacao2">Período 2: Final</label>
+                                <label className={styles.label} htmlFor="dataFinalComparacao2">Período Anterior: Final</label>
                                 <input
                                     id="dataFinalComparacao2"
                                     className={styles.inputDate}
@@ -1227,7 +1265,15 @@ function Historico() {
                             <div className={`${styles.actions} ${styles.actionsComparacao}`}>
                                 <button
                                     className={`${styles.btnPesquisar} ${styles.btnComparacao}`}
-                                    onClick={pesquisarComparacao}
+                                    onClick={() =>
+                                        buscarComparacao({
+                                            variavel: variavelComparacao,
+                                            inicioAtual: dataInicioP1,
+                                            fimAtual: dataFinalP1,
+                                            inicioAnterior: dataInicioP2,
+                                            fimAnterior: dataFinalP2,
+                                        })
+                                    }
                                     disabled={carregandoComparacao}
                                 >
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
