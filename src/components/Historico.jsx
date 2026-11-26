@@ -7,6 +7,8 @@ import { useAnaliseResumo } from '../hooks/useAnaliseResumo'
 import { useAnaliseComparacao } from '../hooks/useAnaliseComparacao'
 import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext'
 
+import { useQualidadeEquipamento } from '../hooks/useQualidadeEquipamento'
+
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
@@ -667,6 +669,13 @@ function Historico() {
         limparComparacao,
     } = useAnaliseComparacao(identifier)
 
+    const {
+    qualidade,
+    carregandoQualidade,
+    erroQualidade,
+    atualizarQualidade,
+    } = useQualidadeEquipamento(identifier)
+
     const [variavelResumo, setVariavelResumo] = useState('')
     const [variavelComparacao, setVariavelComparacao] = useState('')
     const [dataInicioR, setDatainicioR] = useState('')
@@ -813,36 +822,56 @@ function Historico() {
 
     const qualidadeMockada = qualidadeMockadas.indeterminado
 
-    const badgesStatusQualidade = {
-        atualizado: {
-            texto: "Atualizado",
-            classe: styles.badgeAtualizado,
-            descricao: "Medições dentro do intervalo esperado",
-        },
+ const badgesStatusQualidade = {
+    atualizado: {
+        texto: "Atualizado",
+        classe: styles.badgeAtualizado,
+        descricao: "Medições dentro do intervalo esperado",
+    },
+    desatualizado: {
+        texto: "Desatualizado",
+        classe: styles.badgeDesatualizado,
+        descricao: "Leitura antiga: última medição válida ultrapassou o intervalo esperado",
+    },
+    sem_dados: {
+        texto: "Sem dados",
+        classe: styles.badgeSemDados,
+        descricao: "Ausência de dados: não existem medições registradas para este equipamento",
+    },
+    erro: {
+        texto: "Erro na consulta",
+        classe: styles.badgeInvalidos,
+        descricao: "Falha ao consultar a API de qualidade",
+    },
+    indeterminado: {
+        texto: "Indeterminado",
+        classe: styles.badgeIndeterminado,
+        descricao: "Não há informações suficientes para determinar a situação",
+    },
+}
 
-        desatualizado: {
-            texto: "Desatualizado",
-            classe: styles.badgeDesatualizado,
-            descricao: "Última medição válida ultrapassou o intervalo esperado",
-        },
+const statusAtualQualidade = (() => {
+    if (erroQualidade && !qualidade) return "erro"
+    if (!qualidade) return "indeterminado"
+    if (qualidade.status) return qualidade.status
+    if (!qualidade.ultima_medicao_valida) return "sem_dados"
+    return "indeterminado"
+})()
 
-        sem_dados: {
-            texto: "Sem dados",
-            classe: styles.badgeSemDados,
-            descricao: "Não existem medições disponíveis",
-        },
+const badgeStatus =
+    badgesStatusQualidade[statusAtualQualidade] ??
+    badgesStatusQualidade.indeterminado
 
-        indeterminado: {
-            texto: "Indeterminado",
-            classe: styles.badgeIndeterminado,
-            descricao: "Não há informações suficientes para determinar a situação",
-        },
+function formatarIdadeMinutos(minutos) {
+    if (minutos === null || minutos === undefined || !Number.isFinite(Number(minutos))) {
+        return "Não disponível"
     }
-
-    const badgeStatus =
-        badgesStatusQualidade[qualidadeMockada.status] ??
-        badgesStatusQualidade.indeterminado
-
+    const total = Math.max(0, Math.round(Number(minutos)))
+    if (total < 60) return `${total} minuto(s)`
+    const horas = Math.floor(total / 60)
+    const resto = total % 60
+    return resto > 0 ? `${horas}h ${resto}min` : `${horas}h`
+}
     return (
         <div className={styles.pageContainer}>
             <div className={styles.contentWrapper}>
@@ -1049,49 +1078,82 @@ function Historico() {
                     <h3 className={styles.subtituloSecao}>Análise das medições</h3>
 
                     <div className={styles.qualidadeCard}>
-                        <div className={styles.qualidadeCabecalho}>
-                            <div>
-                                <h4>Qualidade dos dados</h4>
-                                <p>Estado atual das medições do equipamento</p>
-                            </div>
+    <div className={styles.qualidadeCabecalho}>
+        <div>
+            <h4>Qualidade dos dados</h4>
+            <p>Estado atual das medições do equipamento</p>
+        </div>
 
-                            <span
-                                className={`${styles.badgeStatus} ${badgeStatus.classe}`}
-                                role="status"
-                                title={badgeStatus.descricao}
-                            >
-                                {badgeStatus.texto}
-                            </span>
-                        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <button
+                type="button"
+                className={styles.btnPesquisar}
+                onClick={atualizarQualidade}
+                disabled={carregandoQualidade}
+                title="Atualizar manualmente o estado de qualidade"
+            >
+                {carregandoQualidade ? "Atualizando..." : "Atualizar"}
+            </button>
 
-                        <div className={styles.qualidadeInformacoes}>
-                            <div className={styles.qualidadeItem}>
-                                <span>Última medição válida</span>
-                                <strong>
-                                    {qualidadeMockada.ultima_medicao_valida ?? "Não disponível"}
-                                </strong>
-                            </div>
+            <span
+                className={`${styles.badgeStatus} ${badgeStatus.classe}`}
+                role="status"
+                title={badgeStatus.descricao}
+            >
+                {badgeStatus.texto}
+            </span>
+        </div>
+    </div>
 
-                            <div className={styles.qualidadeItem}>
-                                <span>Tempo desde a última medição</span>
-                                <strong>
-                                    {qualidadeMockada.idade_minutos != null
-                                        ? `${qualidadeMockada.idade_minutos} minutos`
-                                        : "Não disponível"}
-                                </strong>
-                            </div>
-                        </div>
+    {erroQualidade && (
+        <div className={styles.errorBox} role="alert" style={{ marginTop: '0.75rem' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            {erroQualidade}
+        </div>
+    )}
 
-                        <div className={styles.qualidadeContagens}>
-                            <span className={`${styles.badgeContagem} ${styles.badgeNulos}`}>
-                                Nulos: {qualidadeMockada.registros_nulos ?? "—"}
-                            </span>
+    {!erroQualidade && statusAtualQualidade === "sem_dados" && !carregandoQualidade && (
+        <p className={styles.qualidadeSemDados} role="status" style={{ marginTop: '0.75rem' }}>
+            Ausência de dados: nenhuma leitura válida foi registrada para este equipamento até o momento.
+        </p>
+    )}
 
-                            <span className={`${styles.badgeContagem} ${styles.badgeInvalidos}`}>
-                                Inválidos: {qualidadeMockada.registros_invalidos ?? "—"}
-                            </span>
-                        </div>
-                    </div>
+    {statusAtualQualidade === "desatualizado" && (
+        <p className={styles.qualidadeAviso} role="status" style={{ marginTop: '0.75rem' }}>
+            Leitura antiga: a última medição válida ultrapassou o intervalo esperado de atualização.
+        </p>
+    )}
+
+    <div className={styles.qualidadeInformacoes}>
+        <div className={styles.qualidadeItem}>
+            <span>Última medição válida</span>
+            <strong>
+                {qualidade?.ultima_medicao_valida ?? "Não disponível"}
+            </strong>
+        </div>
+
+        <div className={styles.qualidadeItem}>
+            <span>Tempo desde a última medição</span>
+            <strong>
+                {formatarIdadeMinutos(qualidade?.idade_minutos)}
+            </strong>
+        </div>
+    </div>
+
+    <div className={styles.qualidadeContagens}>
+        <span className={`${styles.badgeContagem} ${styles.badgeNulos}`}>
+            Nulos: {qualidade?.registros_nulos ?? "—"}
+        </span>
+
+        <span className={`${styles.badgeContagem} ${styles.badgeInvalidos}`}>
+            Inválidos: {qualidade?.registros_invalidos ?? "—"}
+        </span>
+    </div>
+</div>
 
                     <div className={styles.abas}>
                         <button

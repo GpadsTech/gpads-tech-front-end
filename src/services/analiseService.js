@@ -71,3 +71,13 @@ export async function getResumoAnalise({ equipamentoId, variavel, inicio, fim, s
     { authenticated: true, signal }
   )
 }
+export async function getQualidadeEquipamento({ equipamentoId, signal }) {
+  if (!equipamentoId) {
+    throw new Error('Identificador do equipamento não informado.')
+  }
+
+  return httpClient.json(
+    `/api/equipamentos/${encodeURIComponent(equipamentoId)}/analise/qualidade/`,
+    { authenticated: true, signal }
+  )
+}
