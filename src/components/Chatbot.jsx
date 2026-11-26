@@ -1,33 +1,106 @@
 import { useChat } from '../hooks/useChat.js';
 import styles from './Chatbot.module.css';
 import RelatorioVisual from './RelatorioVisual.jsx';
+import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext';
+import { baixarHistoricoCSV, baixarRelatorioPDF } from '../services/chatServices';
 
-export default function Chatbot({ equipamentoId }) {
-  const { messages, input, setInput, isLoading, handleSendMessage } = useChat(equipamentoId);
+export default function Chatbot({ equipamentoId: equipamentoIdProp }) {
+  const {
+    equipamentoId: equipamentoIdContexto,
+    periodoAplicado,
+    historicoAplicado,
+  } = useFluxoAnalise();
 
-  // Perfumaria para o textarea/input
+  const equipamentoAtivo = equipamentoIdProp || equipamentoIdContexto;
+  const temFiltroAplicado = Boolean(
+    equipamentoAtivo && periodoAplicado?.inicio && periodoAplicado?.fim
+  );
+
+  const {
+    messages,
+    input,
+    setInput,
+    isLoading,
+    handleSendMessage,
+    gerarRelatorioReal,
+  } = useChat(equipamentoAtivo, periodoAplicado, historicoAplicado);
+
   const handleInput = (e) => {
     const textarea = e.target;
-    // Reseta a altura para recalcular corretamente caso o usuário apague texto
-    textarea.style.height = 'auto'; 
-    // Define a nova altura com base no conteúdo total digitado
+    textarea.style.height = 'auto';
     textarea.style.height = `${textarea.scrollHeight}px`;
   };
 
-  // Também perfumaria para o textarea/input
   const handleKeyDown = (e) => {
-      // Se a tecla pressionada for 'Enter' E a tecla Shift NÃO estiver pressionada
-      if (e.key === 'Enter' && !e.shiftKey) {
-        handleSendMessage(e); // Dispara a ação de envio
+    if (e.key === 'Enter' && !e.shiftKey) {
+      handleSendMessage(e);
     }
-    // Nota: Se o usuário apertar Shift + Enter, ele vai quebrar a linha normalmente!
   };
 
-    return (
+  const handleExportarCSVClick = async () => {
+    if (!temFiltroAplicado) return;
+    await baixarHistoricoCSV(
+      equipamentoAtivo,
+      periodoAplicado.inicio,
+      periodoAplicado.fim
+    );
+  };
+
+  const handleExportarPDFClick = async () => {
+    if (!temFiltroAplicado || typeof baixarRelatorioPDF !== 'function') return;
+    await baixarRelatorioPDF(
+      equipamentoAtivo,
+      periodoAplicado.inicio,
+      periodoAplicado.fim
+    );
+  };
+
+  return (
     <div className={styles.chatbot}>
       <header className={styles.header}>
         <div>
           <h2 className={styles.headerTitle}>Assistente Morhinga</h2>
+        </div>
+
+        <div className={styles.headerActions}>
+          <button
+            type="button"
+            onClick={gerarRelatorioReal}
+            disabled={isLoading || !temFiltroAplicado}
+            title={
+              temFiltroAplicado
+                ? 'Gerar resumo com dados reais do período aplicado'
+                : 'Selecione um equipamento e pesquise um período primeiro'
+            }
+          >
+            Resumo
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportarCSVClick}
+            disabled={isLoading || !temFiltroAplicado}
+            title={
+              temFiltroAplicado
+                ? 'Exportar CSV do período aplicado'
+                : 'Selecione um equipamento e pesquise um período primeiro'
+            }
+          >
+            CSV
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportarPDFClick}
+            disabled={isLoading || !temFiltroAplicado}
+            title={
+              temFiltroAplicado
+                ? 'Exportar PDF do período aplicado'
+                : 'Selecione um equipamento e pesquise um período primeiro'
+            }
+          >
+            PDF
+          </button>
         </div>
       </header>
 
@@ -42,12 +115,12 @@ export default function Chatbot({ equipamentoId }) {
                 msg.sender === 'user' ? styles.bubbleUser : styles.bubbleBot
               } ${msg.isReport ? styles.bubbleReport : ''}`}
             >
-            {msg.report ? (
-              <RelatorioVisual dados={msg.report} />
-            ) : (
-              <p className={styles.text}>{msg.text}</p>
-            )}              
-            <span className={styles.time}>{msg.timestamp}</span>
+              {msg.report ? (
+                <RelatorioVisual dados={msg.report} />
+              ) : (
+                <p className={styles.text}>{msg.text}</p>
+              )}
+              <span className={styles.time}>{msg.timestamp}</span>
             </div>
           </div>
         ))}
@@ -67,16 +140,13 @@ export default function Chatbot({ equipamentoId }) {
             onKeyDown={handleKeyDown}
           ></textarea>
           <button type="submit" disabled={isLoading} className={styles.btnSend}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                {/* Linha vertical (corpo da seta) */}
-                <line x1="12" y1="19" x2="12" y2="5" />
-                {/* Ponta da seta em formato de V invertido */}
-                <polyline points="5 12 12 5 19 12" />
-              </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="19" x2="12" y2="5" />
+              <polyline points="5 12 12 5 19 12" />
+            </svg>
           </button>
         </form>
       </div>
-
     </div>
   );
 }

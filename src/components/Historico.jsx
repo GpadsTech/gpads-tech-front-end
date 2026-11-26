@@ -1,9 +1,10 @@
 import { getEquipmentHistory } from "../services/telemetryService.js"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import styles from './Historico.module.css'
 import { Link, useParams } from 'react-router-dom'
 import { baixarHistoricoCSV } from '../services/chatServices'
 import { useAnaliseResumo } from '../hooks/useAnaliseResumo'
+import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext'
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -567,6 +568,20 @@ function ResultadoComparacao({ dados }) {
 function Historico() {
     const { identifier } = useParams()
     const {
+        equipamentoId,
+        selecionarEquipamento,
+        periodoDraft,
+        atualizarPeriodoDraft,
+        periodoAplicado,
+        aplicarPesquisaPeriodo,
+        historicoAplicado,
+        setHistoricoAplicado
+    } = useFluxoAnalise()
+
+    const equipamento = historicoAplicado.equipamento
+    const dados = historicoAplicado.dados
+
+    const {
         resumo: resultadoResumo,
         carregandoResumo,
         erroResumo,
@@ -574,8 +589,6 @@ function Historico() {
         buscarResumo
     } = useAnaliseResumo(identifier)
 
-    const [dataInicio, setDatainicio] = useState('')
-    const [dataFinal, setDataFinal] = useState('')
     const [variavelResumo, setVariavelResumo] = useState('')
     const [dataInicioR, setDatainicioR] = useState('')
     const [dataFinalR, setDataFinalR] = useState('')
@@ -584,8 +597,6 @@ function Historico() {
     const [dataInicioP2, setDatainicioP2] = useState('')
     const [dataFinalP2, setDataFinalP2] = useState('')
 
-    const [dados, setDados] = useState([])
-    const [equipamento, setEquipamento] = useState(null)
     const [localizacaoSelecionada, setLocalizacaoSelecionada] = useState(null)
     const [resultadoComparacao, setResultadoComparacao] = useState(null)
 
@@ -597,6 +608,25 @@ function Historico() {
     const [erroComparacao, setErroComparacao] = useState('')
 
     const [abaAnalise, setAbaAnalise] = useState("resumo")
+
+    // Sincroniza o equipamento da URL com o contexto e limpa estados locais ao trocar
+    useEffect(() => {
+        if (identifier && identifier !== equipamentoId) {
+            selecionarEquipamento(identifier)
+        }
+        setVariavelResumo('')
+        setDatainicioR('')
+        setDataFinalR('')
+        setDatainicioP1('')
+        setDataFinalP1('')
+        setDatainicioP2('')
+        setDataFinalP2('')
+        setLocalizacaoSelecionada(null)
+        setResultadoComparacao(null)
+        setErroPesquisa('')
+        setErroCSV('')
+        setErroComparacao('')
+    }, [identifier, equipamentoId, selecionarEquipamento])
 
     const localizacoes = []
     dados.forEach((item) => {
@@ -625,29 +655,44 @@ function Historico() {
         setCarregandoPesquisa(true)
         setErroPesquisa('')
         try {
-            const parametros = new URLSearchParams()
-            if (dataInicio) parametros.append('inicio', dataInicio)
-            if (dataFinal) parametros.append('fim', dataFinal)
+            // Valida, formata YYYY-MM-DD e salva no periodoAplicado
+            const { searchParams } = aplicarPesquisaPeriodo()
 
-            const data = await getEquipmentHistory(identifier, parametros)
+            // Mantém a assinatura exata do seu serviço
+            const data = await getEquipmentHistory(identifier, searchParams)
 
-            setEquipamento(data.equipamento)
-            setDados(data.dados)
+            // Salva no estado compartilhado (será limpo ao trocar de equipamento)
+            setHistoricoAplicado({
+                equipamento: data.equipamento,
+                dados: data.dados
+            })
             setLocalizacaoSelecionada(null)
         } catch (error) {
             setErroPesquisa(error.message)
-            setDados([])
-            setEquipamento(null)
+            setHistoricoAplicado({ equipamento: null, dados: [] })
         } finally {
             setCarregandoPesquisa(false)
         }
     }
 
+    const temPeriodoAplicado = Boolean(periodoAplicado?.inicio && periodoAplicado?.fim)
+
     const handleExport = async () => {
+        if (!temPeriodoAplicado) {
+            setErroCSV('Pesquise um período antes de exportar o CSV.')
+            return
+        }
+
         setCarregandoCSV(true)
         setErroCSV('')
         try {
-            await baixarHistoricoCSV(equipamento.identificador, dataInicio, dataFinal)
+            const idAlvo = equipamento?.identificador || identifier
+            // Exportação usa a pesquisa aplicada, mesmo se o formulário mudar depois
+            await baixarHistoricoCSV(
+                idAlvo,
+                periodoAplicado.inicio,
+                periodoAplicado.fim
+            )
         } catch (error) {
             console.error("Erro ao exportar CSV:", error)
             setErroCSV(error?.message || "Não foi possível exportar o CSV.")
@@ -815,8 +860,8 @@ function Historico() {
                                 id="dataInicio"
                                 className={styles.inputDate}
                                 type="date"
-                                value={dataInicio}
-                                onChange={(e) => setDatainicio(e.target.value)}
+                                value={periodoDraft.inicio}
+                                onChange={(e) => atualizarPeriodoDraft('inicio', e.target.value)}
                             />
                         </div>
                         <div className={styles.campo}>
@@ -825,8 +870,8 @@ function Historico() {
                                 id="dataFinal"
                                 className={styles.inputDate}
                                 type="date"
-                                value={dataFinal}
-                                onChange={(e) => setDataFinal(e.target.value)}
+                                value={periodoDraft.fim}
+                                onChange={(e) => atualizarPeriodoDraft('fim', e.target.value)}
                             />
                         </div>
                     </div>
@@ -846,7 +891,8 @@ function Historico() {
                         <button
                             className={styles.btnGerarCSV}
                             onClick={handleExport}
-                            disabled={carregandoCSV}
+                            disabled={carregandoCSV || !temPeriodoAplicado}
+                            title={!temPeriodoAplicado ? "Pesquise um período primeiro" : "Exportar histórico em CSV"}
                         >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

@@ -7,6 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute.jsx'
 import Historico from './components/Historico.jsx'
 import CadastroEquipamento from "./components/CadastroEquipamento"
 import CadastroUsuario from "./components/CadastroUsuario"
+import { FluxoAnaliseProvider } from './contexts/FluxoAnaliseContext'
 
 import MapaPublico from './components/MapaPublico.jsx'
 
@@ -65,8 +66,8 @@ function App() {
     return (
 
         <BrowserRouter>
-
-            <AuthProvider>
+            <FluxoAnaliseProvider>
+                 <AuthProvider>
 
                 <Routes>
 
@@ -115,7 +116,7 @@ function App() {
                 </Routes>
 
             </AuthProvider>
-
+            </FluxoAnaliseProvider>
         </BrowserRouter>
 
     )

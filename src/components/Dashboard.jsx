@@ -8,8 +8,9 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
     Tooltip, ResponsiveContainer
 } from 'recharts'
-import { baixarRelatorioPDF } from '../services/chatServices';
+import { baixarRelatorioPDF } from '../services/chatServices'
 import { createPortal } from 'react-dom'
+import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext'
 
 function SensorLineChart({
     titulo,
@@ -112,6 +113,13 @@ function formatarDataHora(hora) {
 }
 
 function Dashboard({ equipamento, onFechar }) {
+    const {
+        selecionarEquipamento,
+        periodoDraft,
+        atualizarPeriodoDraft,
+        aplicarPesquisaPeriodo
+    } = useFluxoAnalise()
+
     const [leitura, setLeitura] = useState(null)
     const [carregando, setCarregando] = useState(true)
     const [erro, setErro] = useState(null)
@@ -119,59 +127,61 @@ function Dashboard({ equipamento, onFechar }) {
     const dataHoraLeitura = formatarDataHora(leitura?.hora)
     const [leituras, setLeituras] = useState([])
     const [statusDados, setStatusDados] = useState('carregando')
-    
-    // Modal
-    const [modalRelatorioAberto, setModalRelatorioAberto] = useState(false);
-    const [inicio, setInicio] = useState('');
-    const [fim, setFim] = useState('');
-    const [carregandoRelatorio, setCarregandoRelatorio] = useState(false);
-    const [erroRelatorio, setErroRelatorio] = useState('');
+
+    // Modal Relatório
+    const [modalRelatorioAberto, setModalRelatorioAberto] = useState(false)
+    const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
+    const [erroRelatorio, setErroRelatorio] = useState('')
+
+    // Sincroniza o equipamento ativo no contexto global e limpa dados locais na troca
+    useEffect(() => {
+        if (!equipamento) return
+        selecionarEquipamento(equipamento)
+        setLeitura(null)
+        setLeituras([])
+        setErro(null)
+    }, [equipamento, selecionarEquipamento])
 
     const abrirModalRelatorio = () => {
-        setErroRelatorio('');
-        setModalRelatorioAberto(true);
-    };
+        setErroRelatorio('')
+        setModalRelatorioAberto(true)
+    }
 
     const fecharModalRelatorio = () => {
-        if (carregandoRelatorio) return;
+        if (carregandoRelatorio) return
 
-        setModalRelatorioAberto(false);
-        setErroRelatorio('');
-    };
+        setModalRelatorioAberto(false)
+        setErroRelatorio('')
+    }
 
     const handleGerarRelatorio = async (e) => {
-        e.preventDefault();
-        setErroRelatorio('');
+        e.preventDefault()
+        setErroRelatorio('')
 
-        if (!inicio || !fim) {
-            setErroRelatorio('Preencha as datas de início e fim.');
-            return;
-        }
-
-        if (inicio > fim) {
-            setErroRelatorio(
-                'A data de início não pode ser posterior à data de fim.'
-            );
-            return;
+        if (!periodoDraft.inicio || !periodoDraft.fim) {
+            setErroRelatorio('Preencha as datas de início e fim.')
+            return
         }
 
         try {
-            setCarregandoRelatorio(true);
+            setCarregandoRelatorio(true)
 
-            await baixarRelatorioPDF(equipamento.identificador, inicio, fim);
+            // Valida, formata YYYY-MM-DD e congela como pesquisa aplicada
+            const { inicio: inicioFmt, fim: fimFmt } = aplicarPesquisaPeriodo()
 
-            setModalRelatorioAberto(false);
+            await baixarRelatorioPDF(equipamento.identificador, inicioFmt, fimFmt)
+
+            setModalRelatorioAberto(false)
         } catch (error) {
-            console.error('Erro ao gerar relatório:', error);
+            console.error('Erro ao gerar relatório:', error)
 
             setErroRelatorio(
-                'Não foi possível gerar o relatório. Tente novamente.'
-            );
+                error?.message || 'Não foi possível gerar o relatório. Tente novamente.'
+            )
         } finally {
-            setCarregandoRelatorio(false);
+            setCarregandoRelatorio(false)
         }
-    };
-    // Fim Modal
+    }
 
     useEffect(() => {
         if (!equipamento) return
@@ -203,7 +213,7 @@ function Dashboard({ equipamento, onFechar }) {
                 const ultimaLeitura = leiturasComHora.length > 0
                     ? leiturasComHora[leiturasComHora.length - 1]
                     : leiturasRecebidas[leiturasRecebidas.length - 1]
-                
+
                 let novoStatus = 'atualizado'
 
                 if (ultimaLeitura?.hora) {
@@ -253,16 +263,14 @@ function Dashboard({ equipamento, onFechar }) {
     const valorRpm = leitura?.rpm ?? 0
     const valorVento = leitura?.vento ?? 0
 
-
     const valorPh = leitura?.ph ?? 0
     const valorTurbidez = leitura?.turbidez_ntu ?? 0
     const valorSensorUV = leitura?.sensor_uv_v ?? 0
     const valorAdc = leitura?.adc ?? 0
 
-
     return (
         <div className={styles.dashboard} id="dashboard">
-            
+
             {/* Header do Dashboard */}
             <div className={styles.headerDashboard}>
                 <div>
@@ -293,21 +301,23 @@ function Dashboard({ equipamento, onFechar }) {
                 </div>
 
                 <div className={styles.actionsBox}>
-                    <button className={`${styles.btnAction} ${chatAberto ? styles.chatbotActive: ''}`}
+                    <button
+                        className={`${styles.btnAction} ${chatAberto ? styles.chatbotActive : ''}`}
                         onClick={() => setChatAberto((aberto) => !aberto)}
                         title="Abrir chatbot"
                         aria-label="Abrir chatbot"
-                        aria-pressed={chatAberto}>
+                        aria-pressed={chatAberto}
+                    >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                         </svg>
                         Morhinga Chatbot
                     </button>
 
-                    {/* Botão adicionado "Gerar Relatório" */}
+                    {/* Botão "Gerar Relatório" */}
                     <button
                         type="button"
-                        onClick={abrirModalRelatorio} 
+                        onClick={abrirModalRelatorio}
                         className={styles.btnAction}
                     >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -320,110 +330,114 @@ function Dashboard({ equipamento, onFechar }) {
                     </button>
 
                     {modalRelatorioAberto &&
-                    createPortal(
-                        <div
-                            className={styles.modalRelatorioFundo}
-                            onMouseDown={(e) => {
-                                if (e.target === e.currentTarget) {
-                                    fecharModalRelatorio();
-                                }
-                            }}
-                        >
-                            <section
-                                className={styles.modalRelatorio}
-                                role="dialog"
-                                aria-modal="true"
-                                aria-labelledby="titulo-modal-relatorio"
+                        createPortal(
+                            <div
+                                className={styles.modalRelatorioFundo}
+                                onMouseDown={(e) => {
+                                    if (e.target === e.currentTarget) {
+                                        fecharModalRelatorio()
+                                    }
+                                }}
                             >
-                                <button
-                                    type="button"
-                                    className={styles.modalRelatorioFechar}
-                                    onClick={fecharModalRelatorio}
-                                    disabled={carregandoRelatorio}
-                                    aria-label="Fechar modal"
+                                <section
+                                    className={styles.modalRelatorio}
+                                    role="dialog"
+                                    aria-modal="true"
+                                    aria-labelledby="titulo-modal-relatorio"
                                 >
-                                    ×
-                                </button>
+                                    <button
+                                        type="button"
+                                        className={styles.modalRelatorioFechar}
+                                        onClick={fecharModalRelatorio}
+                                        disabled={carregandoRelatorio}
+                                        aria-label="Fechar modal"
+                                    >
+                                        ×
+                                    </button>
 
-                                <h2 id="titulo-modal-relatorio">Gerar relatório PDF</h2>
-                                <p>Selecione o período desejado para o relatório.</p>
+                                    <h2 id="titulo-modal-relatorio">Gerar relatório PDF</h2>
+                                    <p>Selecione o período desejado para o relatório.</p>
 
-                                <form onSubmit={handleGerarRelatorio}>
-                                    <div className={styles.campoRelatorio}>
-                                        <label htmlFor="data-inicio-relatorio">
-                                            Data de início
-                                        </label>
+                                    <form onSubmit={handleGerarRelatorio}>
+                                        <div className={styles.campoRelatorio}>
+                                            <label htmlFor="data-inicio-relatorio">
+                                                Data de início
+                                            </label>
 
-                                        <input
-                                            id="data-inicio-relatorio"
-                                            type="date"
-                                            value={inicio}
-                                            max={fim || undefined}
-                                            onChange={(e) => setInicio(e.target.value)}
-                                            required
-                                            disabled={carregandoRelatorio}
-                                        />
-                                    </div>
+                                            <input
+                                                id="data-inicio-relatorio"
+                                                type="date"
+                                                value={periodoDraft.inicio}
+                                                max={periodoDraft.fim || undefined}
+                                                onChange={(e) => atualizarPeriodoDraft('inicio', e.target.value)}
+                                                required
+                                                disabled={carregandoRelatorio}
+                                            />
+                                        </div>
 
-                                    <div className={styles.campoRelatorio}>
-                                        <label htmlFor="data-fim-relatorio">
-                                            Data de fim
-                                        </label>
+                                        <div className={styles.campoRelatorio}>
+                                            <label htmlFor="data-fim-relatorio">
+                                                Data de fim
+                                            </label>
 
-                                        <input
-                                            id="data-fim-relatorio"
-                                            type="date"
-                                            value={fim}
-                                            min={inicio || undefined}
-                                            onChange={(e) => setFim(e.target.value)}
-                                            required
-                                            disabled={carregandoRelatorio}
-                                        />
-                                    </div>
+                                            <input
+                                                id="data-fim-relatorio"
+                                                type="date"
+                                                value={periodoDraft.fim}
+                                                min={periodoDraft.inicio || undefined}
+                                                onChange={(e) => atualizarPeriodoDraft('fim', e.target.value)}
+                                                required
+                                                disabled={carregandoRelatorio}
+                                            />
+                                        </div>
 
-                                    {erroRelatorio && (
-                                        <p
-                                            className={styles.erroRelatorio}
-                                            role="alert"
-                                        >
-                                            {erroRelatorio}
-                                        </p>
-                                    )}
+                                        {erroRelatorio && (
+                                            <p
+                                                className={styles.erroRelatorio}
+                                                role="alert"
+                                            >
+                                                {erroRelatorio}
+                                            </p>
+                                        )}
 
-                                    <div className={styles.acoesRelatorio}>
-                                        <button
-                                            type="button"
-                                            className={styles.cancelarRelatorio}
-                                            onClick={fecharModalRelatorio}
-                                            disabled={carregandoRelatorio}
-                                        >
-                                            Cancelar
-                                        </button>
+                                        <div className={styles.acoesRelatorio}>
+                                            <button
+                                                type="button"
+                                                className={styles.cancelarRelatorio}
+                                                onClick={fecharModalRelatorio}
+                                                disabled={carregandoRelatorio}
+                                            >
+                                                Cancelar
+                                            </button>
 
-                                        <button
-                                            type="submit"
-                                            className={styles.confirmarRelatorio}
-                                            disabled={carregandoRelatorio}
-                                        >
-                                            {carregandoRelatorio
-                                                ? 'Gerando PDF...'
-                                                : 'Gerar PDF'}
-                                        </button>
-                                    </div>
-                                </form>
-                            </section>
-                        </div>,
-                        document.body
-                    )}
+                                            <button
+                                                type="submit"
+                                                className={styles.confirmarRelatorio}
+                                                disabled={carregandoRelatorio}
+                                            >
+                                                {carregandoRelatorio
+                                                    ? 'Gerando PDF...'
+                                                    : 'Gerar PDF'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </section>
+                            </div>,
+                            document.body
+                        )}
 
-                    <Link to={`/historico/${equipamento.identificador}`} className={styles.btnAction}>
+                    <Link
+                        to={`/historico/${equipamento.identificador}`}
+                        onClick={() => selecionarEquipamento(equipamento)}
+                        className={styles.btnAction}
+                    >
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="12 8 12 12 14 14" />
                             <circle cx="12" cy="12" r="10" />
                         </svg>
                         Histórico
                     </Link>
-                    
+
                     <button onClick={onFechar} className={styles.btnClose} title="Fechar Dashboard">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18" />
@@ -456,7 +470,7 @@ function Dashboard({ equipamento, onFechar }) {
                             <Chatbot equipamentoId={equipamento.identificador} />
                         </div>
                     )}
-                    
+
                     <div className={styles.card}>
                         <p className={styles.cardInfoTitle}>Última leitura</p>
                         {leitura?.hora ? (
@@ -515,7 +529,7 @@ function Dashboard({ equipamento, onFechar }) {
                     <div className={styles.card}>
                         <SensorLineChart titulo="Tensão Elétrica" dados={leituras} campo="tensao_v" unidade="V" cor="#a259f7" dominio={[0, 5]} formatarY={v => `${v}V`} />
                     </div>
-                    
+
                 </div>
             )}
         </div>
