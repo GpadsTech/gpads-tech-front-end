@@ -111,7 +111,7 @@ export function FluxoAnaliseProvider({ children }) {
     </FluxoAnaliseContext.Provider>
   )
 }
-
+// eslint-disable-next-line react-refresh/only-export-components
 export function useFluxoAnalise() {
   const ctx = useContext(FluxoAnaliseContext)
   if (!ctx) {

@@ -2,9 +2,12 @@ import { useState, useEffect, useRef } from 'react'
 import { getAvisosOperacionais } from '../services/analiseService.js'
 
 export function useAvisosOperacionais(equipamentoId) {
-  const [dadosAvisos, setDadosAvisos] = useState(null)
-  const [carregando, setCarregando] = useState(false)
-  const [erro, setErro] = useState('')
+  const [estado, setEstado] = useState({
+    equipamentoId: null,
+    dados: null,
+    erro: '',
+    concluido: false,
+  })
 
   const controllerRef = useRef(null)
   const requestIdRef = useRef(0)
@@ -15,15 +18,7 @@ export function useAvisosOperacionais(equipamentoId) {
     controllerRef.current = controller
     const requestId = ++requestIdRef.current
 
-    setDadosAvisos(null)
-    setErro('')
-
-    if (!equipamentoId) {
-      setCarregando(false)
-      return
-    }
-
-    setCarregando(true)
+    if (!equipamentoId) return
 
     getAvisosOperacionais({ equipamentoId, signal: controller.signal })
       .then((resposta) => {
@@ -36,17 +31,22 @@ export function useAvisosOperacionais(equipamentoId) {
           return
         }
 
-        setDadosAvisos(resposta)
+        setEstado({
+          equipamentoId,
+          dados: resposta,
+          erro: '',
+          concluido: true,
+        })
       })
       .catch((err) => {
         if (err.name === 'AbortError' || controller.signal.aborted) return
         if (requestId === requestIdRef.current) {
-          setErro(err.message || 'Não foi possível carregar os avisos operacionais.')
-        }
-      })
-      .finally(() => {
-        if (!controller.signal.aborted && requestId === requestIdRef.current) {
-          setCarregando(false)
+          setEstado({
+            equipamentoId,
+            dados: null,
+            erro: err.message || 'Não foi possível carregar os avisos operacionais.',
+            concluido: true,
+          })
         }
       })
 
@@ -55,9 +55,11 @@ export function useAvisosOperacionais(equipamentoId) {
     }
   }, [equipamentoId])
 
+  const pertenceAoAtivo = Boolean(equipamentoId) && estado.equipamentoId === equipamentoId
+
   return {
-    dadosAvisos,
-    carregandoAvisos: carregando,
-    erroAvisos: erro,
+    dadosAvisos: pertenceAoAtivo ? estado.dados : null,
+    carregandoAvisos: Boolean(equipamentoId) && (!pertenceAoAtivo || !estado.concluido),
+    erroAvisos: pertenceAoAtivo ? estado.erro : '',
   }
 }

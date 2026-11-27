@@ -1,8 +1,7 @@
 import { getEquipmentData } from "../services/telemetryService.js"
 import Gauge from './Gauge.jsx'
 import styles from './Dashboard.module.css'
-import Chatbot from './Chatbot.jsx'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
@@ -13,6 +12,8 @@ import { createPortal } from 'react-dom'
 import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext'
 import { useAvisosOperacionais } from '../hooks/useAvisosOperacionais.js'
 import AvisosOperacionais from './AvisosOperacionais.jsx'
+
+const Chatbot = lazy(() => import('./Chatbot.jsx'))
 
 function SensorLineChart({
     titulo,
@@ -116,16 +117,17 @@ function formatarDataHora(hora) {
 
 function Dashboard({ equipamento, onFechar }) {
     const {
-    dadosAvisos,
-    carregandoAvisos,
-    erroAvisos,
-} = useAvisosOperacionais(equipamento?.identificador)
-    const {
         selecionarEquipamento,
         periodoDraft,
         atualizarPeriodoDraft,
         aplicarPesquisaPeriodo
     } = useFluxoAnalise()
+
+    const {
+        dadosAvisos,
+        carregandoAvisos,
+        erroAvisos,
+    } = useAvisosOperacionais(equipamento?.identificador)
 
     const [leitura, setLeitura] = useState(null)
     const [carregando, setCarregando] = useState(true)
@@ -140,13 +142,9 @@ function Dashboard({ equipamento, onFechar }) {
     const [carregandoRelatorio, setCarregandoRelatorio] = useState(false)
     const [erroRelatorio, setErroRelatorio] = useState('')
 
-    // Sincroniza o equipamento ativo no contexto global e limpa dados locais na troca
     useEffect(() => {
         if (!equipamento) return
         selecionarEquipamento(equipamento)
-        setLeitura(null)
-        setLeituras([])
-        setErro(null)
     }, [equipamento, selecionarEquipamento])
 
     const abrirModalRelatorio = () => {
@@ -156,7 +154,6 @@ function Dashboard({ equipamento, onFechar }) {
 
     const fecharModalRelatorio = () => {
         if (carregandoRelatorio) return
-
         setModalRelatorioAberto(false)
         setErroRelatorio('')
     }
@@ -172,16 +169,10 @@ function Dashboard({ equipamento, onFechar }) {
 
         try {
             setCarregandoRelatorio(true)
-
-            // Valida, formata YYYY-MM-DD e congela como pesquisa aplicada
             const { inicio: inicioFmt, fim: fimFmt } = aplicarPesquisaPeriodo()
-
             await baixarRelatorioPDF(equipamento.identificador, inicioFmt, fimFmt)
-
             setModalRelatorioAberto(false)
         } catch (error) {
-            console.error('Erro ao gerar relatório:', error)
-
             setErroRelatorio(
                 error?.message || 'Não foi possível gerar o relatório. Tente novamente.'
             )
@@ -196,16 +187,13 @@ function Dashboard({ equipamento, onFechar }) {
         let ativo = true
         async function carregarDados() {
             try {
-                setErro(null)
-                setStatusDados('carregando')
-
                 const data = await getEquipmentData(equipamento.identificador)
-
                 const dados = data.dados || {}
                 const leiturasRecebidas = Object.values(dados)
 
                 if (leiturasRecebidas.length === 0) {
                     if (ativo) {
+                        setErro(null)
                         setLeitura(null)
                         setLeituras([])
                         setStatusDados('sem_dados')
@@ -231,13 +219,13 @@ function Dashboard({ equipamento, onFechar }) {
                 }
 
                 if (ativo) {
+                    setErro(null)
                     setLeitura(ultimaLeitura)
                     setLeituras(leiturasComHora)
                     setStatusDados(novoStatus)
                 }
 
             } catch (error) {
-                console.error("Erro ao carregar dados do equipamento:", error)
                 if (ativo) {
                     setErro(error.message)
                     setStatusDados('erro')
@@ -321,7 +309,6 @@ function Dashboard({ equipamento, onFechar }) {
                         Morhinga Chatbot
                     </button>
 
-                    {/* Botão "Gerar Relatório" */}
                     <button
                         type="button"
                         onClick={abrirModalRelatorio}
@@ -453,14 +440,15 @@ function Dashboard({ equipamento, onFechar }) {
                     </button>
                 </div>
             </div>
-                
-                <AvisosOperacionais
-    equipamentoId={equipamento.identificador}
-    dadosAvisos={dadosAvisos}
-    carregando={carregandoAvisos}
-    erro={erroAvisos}
-    statusDados={statusDados} />
-    
+
+            <AvisosOperacionais
+                equipamentoId={equipamento.identificador}
+                dadosAvisos={dadosAvisos}
+                carregando={carregandoAvisos}
+                erro={erroAvisos}
+                statusDados={statusDados}
+            />
+
             {/* Mensagens Globais */}
             {carregando && (
                 <div className={styles.loadingBox}>
@@ -481,7 +469,9 @@ function Dashboard({ equipamento, onFechar }) {
 
                     {chatAberto && (
                         <div className={styles.chatCard}>
-                            <Chatbot equipamentoId={equipamento.identificador} />
+                            <Suspense fallback={<p style={{ padding: '1rem', color: '#fff' }}>Abrindo assistente...</p>}>
+                                <Chatbot equipamentoId={equipamento.identificador} />
+                            </Suspense>
                         </div>
                     )}
 
@@ -522,7 +512,9 @@ function Dashboard({ equipamento, onFechar }) {
 
                     {chatAberto && (
                         <div className={styles.chatCard}>
-                            <Chatbot equipamentoId={equipamento.identificador} />
+                            <Suspense fallback={<p style={{ padding: '1rem', color: '#fff' }}>Abrindo assistente...</p>}>
+                                <Chatbot equipamentoId={equipamento.identificador} />
+                            </Suspense>
                         </div>
                     )}
 

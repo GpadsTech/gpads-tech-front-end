@@ -5,6 +5,7 @@ import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext';
 import { baixarHistoricoCSV, baixarRelatorioPDF } from '../services/chatServices';
 
 export default function Chatbot({ equipamentoId: equipamentoIdProp }) {
+
   const {
     equipamentoId: equipamentoIdContexto,
     periodoAplicado,

@@ -6,7 +6,6 @@ import { baixarHistoricoCSV } from '../services/chatServices'
 import { useAnaliseResumo } from '../hooks/useAnaliseResumo'
 import { useAnaliseComparacao } from '../hooks/useAnaliseComparacao'
 import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext'
-
 import { useQualidadeEquipamento } from '../hooks/useQualidadeEquipamento'
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
@@ -33,6 +32,36 @@ const customNeonMarker = L.divIcon({
     iconAnchor: [18, 46],
     popupAnchor: [0, -42]
 })
+
+function obterOpcoesVariaveis(tipo) {
+    if (tipo === 'boia') {
+        return [
+            { value: 'ph', label: 'pH' },
+            { value: 'turbidez_ntu', label: 'Turbidez (NTU)' },
+            { value: 'sensor_uv_v', label: 'Sensor UV (V)' },
+            { value: 'adc', label: 'ADC' },
+        ]
+    }
+    if (tipo === 'estacao') {
+        return [
+            { value: 'temperatura', label: 'Temperatura (°C)' },
+            { value: 'umidade', label: 'Umidade (%)' },
+            { value: 'pressao', label: 'Pressão (hPa)' },
+            { value: 'vento', label: 'Vento (m/s)' },
+            { value: 'rpm', label: 'RPM' },
+            { value: 'luz', label: 'Luminosidade (lx)' },
+            { value: 'ar', label: 'Qualidade do ar (AQI)' },
+            { value: 'gas', label: 'Gás (ppm)' },
+            { value: 'volt', label: 'Tensão Elétrica (V)' },
+        ]
+    }
+    return [
+        { value: 'temperatura', label: 'Temperatura (°C)' },
+        { value: 'umidade', label: 'Umidade (%)' },
+        { value: 'ph', label: 'pH' },
+        { value: 'turbidez_ntu', label: 'Turbidez (NTU)' },
+    ]
+}
 
 function formatarHora(hora) {
     if (!hora) return ''
@@ -144,7 +173,6 @@ function GraficoFaixaEstatistica({ dados }) {
         ? 50
         : ((media - minimo) / amplitude) * 100
 
-    // pH não possui unidade física.
     const unidade = dados.variavel?.toLowerCase() === "ph"
         ? ""
         : dados.unidade || ""
@@ -170,14 +198,11 @@ function GraficoFaixaEstatistica({ dados }) {
             >
                 <div className={styles.faixaTrilho}>
                     <span className={styles.faixaLinha} />
-
                     <span className={styles.faixaPontoMinimo} />
-
                     <span
                         className={styles.faixaMarcadorMedia}
                         style={{ left: `${posicaoMedia}%` }}
                     />
-
                     <span className={styles.faixaPontoMaximo} />
                 </div>
             </div>
@@ -305,31 +330,22 @@ function GraficoQualidadeRegistros({ dados }) {
                     <div className={styles.qualidadeLegenda}>
                         <div className={styles.qualidadeLegendaItem}>
                             <span className={styles.legendaValido} />
-
                             <span>Válidos</span>
-
                             <strong>{formatarNumero(validos)}</strong>
-
                             <small>{formatarPercentual(validos)}</small>
                         </div>
 
                         <div className={styles.qualidadeLegendaItem}>
                             <span className={styles.legendaNulo} />
-
                             <span>Nulos</span>
-
                             <strong>{formatarNumero(nulos)}</strong>
-
                             <small>{formatarPercentual(nulos)}</small>
                         </div>
 
                         <div className={styles.qualidadeLegendaItem}>
                             <span className={styles.legendaInvalido} />
-
                             <span>Inválidos</span>
-
                             <strong>{formatarNumero(invalidos)}</strong>
-
                             <small>{formatarPercentual(invalidos)}</small>
                         </div>
                     </div>
@@ -343,7 +359,6 @@ function GraficoQualidadeRegistros({ dados }) {
 
             <div className={styles.registrosUtilizados}>
                 <span>Registros utilizados no cálculo</span>
-
                 <strong>{formatarNumero(utilizados)}</strong>
             </div>
         </div>
@@ -402,7 +417,6 @@ function formatarDataComparacao(data) {
 
     const dataFormatada = new Date(ano, mes - 1, dia)
 
-    // Evita datas inválidas, como 32/13/2026.
     if (
         dataFormatada.getFullYear() !== ano ||
         dataFormatada.getMonth() !== mes - 1 ||
@@ -637,8 +651,18 @@ function ResultadoComparacao({ dados }) {
     )
 }
 
-function Historico() {
-    const { identifier } = useParams()
+function formatarIdadeMinutos(minutos) {
+    if (minutos === null || minutos === undefined || !Number.isFinite(Number(minutos))) {
+        return "Não disponível"
+    }
+    const total = Math.max(0, Math.round(Number(minutos)))
+    if (total < 60) return `${total} minuto(s)`
+    const horas = Math.floor(total / 60)
+    const resto = total % 60
+    return resto > 0 ? `${horas}h ${resto}min` : `${horas}h`
+}
+
+function HistoricoConteudo({ identifier }) {
     const {
         equipamentoId,
         selecionarEquipamento,
@@ -649,9 +673,6 @@ function Historico() {
         historicoAplicado,
         setHistoricoAplicado
     } = useFluxoAnalise()
-
-    const equipamento = historicoAplicado.equipamento
-    const dados = historicoAplicado.dados
 
     const {
         resumo: resultadoResumo,
@@ -670,10 +691,10 @@ function Historico() {
     } = useAnaliseComparacao(identifier)
 
     const {
-    qualidade,
-    carregandoQualidade,
-    erroQualidade,
-    atualizarQualidade,
+        qualidade,
+        carregandoQualidade,
+        erroQualidade,
+        atualizarQualidade,
     } = useQualidadeEquipamento(identifier)
 
     const [variavelResumo, setVariavelResumo] = useState('')
@@ -694,24 +715,21 @@ function Historico() {
 
     const [abaAnalise, setAbaAnalise] = useState("resumo")
 
-    // Sincroniza o equipamento da URL com o contexto e limpa estados locais ao trocar
     useEffect(() => {
-        if (identifier && identifier !== equipamentoId) {
+        if (identifier && String(identifier) !== String(equipamentoId)) {
             selecionarEquipamento(identifier)
         }
-        setVariavelResumo('')
-        setVariavelComparacao('')
-        setDatainicioR('')
-        setDataFinalR('')
-        setDatainicioP1('')
-        setDataFinalP1('')
-        setDatainicioP2('')
-        setDataFinalP2('')
-        setLocalizacaoSelecionada(null)
-        limparComparacao()
-        setErroPesquisa('')
-        setErroCSV('')
-    }, [identifier, equipamentoId, selecionarEquipamento, limparComparacao])
+    }, [identifier, equipamentoId, selecionarEquipamento])
+
+    // Garante isolamento de contexto: nunca exibe histórico salvo de outro equipamento
+    const historicoPertenceAoAtivo =
+        historicoAplicado?.equipamento &&
+        String(historicoAplicado.equipamento.identificador) === String(identifier)
+
+    const equipamento = historicoPertenceAoAtivo ? historicoAplicado.equipamento : null
+    const dados = historicoPertenceAoAtivo ? historicoAplicado.dados : []
+
+    const opcoesVariaveis = obterOpcoesVariaveis(equipamento?.tipo)
 
     const localizacoes = []
     dados.forEach((item) => {
@@ -739,6 +757,7 @@ function Historico() {
     const pesquisar = async () => {
         setCarregandoPesquisa(true)
         setErroPesquisa('')
+        setErroCSV('')
         try {
             const { searchParams } = aplicarPesquisaPeriodo()
             const data = await getEquipmentHistory(identifier, searchParams)
@@ -757,10 +776,14 @@ function Historico() {
     }
 
     const temPeriodoAplicado = Boolean(periodoAplicado?.inicio && periodoAplicado?.fim)
+    const periodoSincronizado =
+        temPeriodoAplicado &&
+        periodoAplicado.inicio === periodoDraft.inicio &&
+        periodoAplicado.fim === periodoDraft.fim
 
     const handleExport = async () => {
-        if (!temPeriodoAplicado) {
-            setErroCSV('Pesquise um período antes de exportar o CSV.')
+        if (!periodoSincronizado) {
+            setErroCSV('Clique em "Pesquisar" para aplicar o período selecionado antes de exportar o CSV.')
             return
         }
 
@@ -774,104 +797,52 @@ function Historico() {
                 periodoAplicado.fim
             )
         } catch (error) {
-            console.error("Erro ao exportar CSV:", error)
             setErroCSV(error?.message || "Não foi possível exportar o CSV.")
         } finally {
             setCarregandoCSV(false)
         }
     }
 
-    // Fixtures sintéticas: utilizadas somente durante o desenvolvimento.
-    const qualidadeMockadas = {
+    const badgesStatusQualidade = {
         atualizado: {
-            equipamento_id: Number(identifier),
-            ultima_medicao_valida: "2026-09-23 08:25:34",
-            idade_minutos: 15,
-            status: "atualizado",
-            registros_nulos: 5,
-            registros_invalidos: 2,
+            texto: "Atualizado",
+            classe: styles.badgeAtualizado,
+            descricao: "Medições dentro do intervalo esperado",
         },
-
         desatualizado: {
-            equipamento_id: Number(identifier),
-            ultima_medicao_valida: "2026-09-23 08:25:34",
-            idade_minutos: 180,
-            status: "desatualizado",
-            registros_nulos: 5,
-            registros_invalidos: 2,
+            texto: "Desatualizado",
+            classe: styles.badgeDesatualizado,
+            descricao: "Leitura antiga: última medição válida ultrapassou o intervalo esperado",
         },
-
         sem_dados: {
-            equipamento_id: Number(identifier),
-            ultima_medicao_valida: null,
-            idade_minutos: null,
-            status: "sem_dados",
-            registros_nulos: 0,
-            registros_invalidos: 0,
+            texto: "Sem dados",
+            classe: styles.badgeSemDados,
+            descricao: "Ausência de dados: não existem medições registradas para este equipamento",
         },
-
+        erro: {
+            texto: "Erro na consulta",
+            classe: styles.badgeInvalidos,
+            descricao: "Falha ao consultar a API de qualidade",
+        },
         indeterminado: {
-            equipamento_id: Number(identifier),
-            ultima_medicao_valida: null,
-            idade_minutos: null,
-            status: "indeterminado",
-            registros_nulos: null,
-            registros_invalidos: null,
+            texto: "Indeterminado",
+            classe: styles.badgeIndeterminado,
+            descricao: "Não há informações suficientes para determinar a situação",
         },
     }
 
-    const qualidadeMockada = qualidadeMockadas.indeterminado
+    const statusAtualQualidade = (() => {
+        if (erroQualidade && !qualidade) return "erro"
+        if (!qualidade) return "indeterminado"
+        if (qualidade.status) return qualidade.status
+        if (!qualidade.ultima_medicao_valida) return "sem_dados"
+        return "indeterminado"
+    })()
 
- const badgesStatusQualidade = {
-    atualizado: {
-        texto: "Atualizado",
-        classe: styles.badgeAtualizado,
-        descricao: "Medições dentro do intervalo esperado",
-    },
-    desatualizado: {
-        texto: "Desatualizado",
-        classe: styles.badgeDesatualizado,
-        descricao: "Leitura antiga: última medição válida ultrapassou o intervalo esperado",
-    },
-    sem_dados: {
-        texto: "Sem dados",
-        classe: styles.badgeSemDados,
-        descricao: "Ausência de dados: não existem medições registradas para este equipamento",
-    },
-    erro: {
-        texto: "Erro na consulta",
-        classe: styles.badgeInvalidos,
-        descricao: "Falha ao consultar a API de qualidade",
-    },
-    indeterminado: {
-        texto: "Indeterminado",
-        classe: styles.badgeIndeterminado,
-        descricao: "Não há informações suficientes para determinar a situação",
-    },
-}
+    const badgeStatus =
+        badgesStatusQualidade[statusAtualQualidade] ??
+        badgesStatusQualidade.indeterminado
 
-const statusAtualQualidade = (() => {
-    if (erroQualidade && !qualidade) return "erro"
-    if (!qualidade) return "indeterminado"
-    if (qualidade.status) return qualidade.status
-    if (!qualidade.ultima_medicao_valida) return "sem_dados"
-    return "indeterminado"
-})()
-
-const badgeStatus =
-    badgesStatusQualidade[statusAtualQualidade] ??
-    badgesStatusQualidade.indeterminado
-
-function formatarIdadeMinutos(minutos) {
-    if (minutos === null || minutos === undefined || !Number.isFinite(Number(minutos))) {
-        return "Não disponível"
-    }
-    const total = Math.max(0, Math.round(Number(minutos)))
-    if (total < 60) return `${total} minuto(s)`
-    const horas = Math.floor(total / 60)
-    const resto = total % 60
-    return resto > 0 ? `${horas}h ${resto}min` : `${horas}h`
-}
     return (
         <div className={styles.pageContainer}>
             <div className={styles.contentWrapper}>
@@ -898,7 +869,11 @@ function formatarIdadeMinutos(minutos) {
                                 className={styles.inputDate}
                                 type="date"
                                 value={periodoDraft.inicio}
-                                onChange={(e) => atualizarPeriodoDraft('inicio', e.target.value)}
+                                max={periodoDraft.fim || undefined}
+                                onChange={(e) => {
+                                    setErroCSV('')
+                                    atualizarPeriodoDraft('inicio', e.target.value)
+                                }}
                             />
                         </div>
                         <div className={styles.campo}>
@@ -908,7 +883,11 @@ function formatarIdadeMinutos(minutos) {
                                 className={styles.inputDate}
                                 type="date"
                                 value={periodoDraft.fim}
-                                onChange={(e) => atualizarPeriodoDraft('fim', e.target.value)}
+                                min={periodoDraft.inicio || undefined}
+                                onChange={(e) => {
+                                    setErroCSV('')
+                                    atualizarPeriodoDraft('fim', e.target.value)
+                                }}
                             />
                         </div>
                     </div>
@@ -928,8 +907,8 @@ function formatarIdadeMinutos(minutos) {
                         <button
                             className={styles.btnGerarCSV}
                             onClick={handleExport}
-                            disabled={carregandoCSV || !temPeriodoAplicado}
-                            title={!temPeriodoAplicado ? "Pesquise um período primeiro" : "Exportar histórico em CSV"}
+                            disabled={carregandoCSV || !periodoSincronizado}
+                            title={!periodoSincronizado ? "Pesquise o período selecionado primeiro" : "Exportar histórico em CSV"}
                         >
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -1078,82 +1057,82 @@ function formatarIdadeMinutos(minutos) {
                     <h3 className={styles.subtituloSecao}>Análise das medições</h3>
 
                     <div className={styles.qualidadeCard}>
-    <div className={styles.qualidadeCabecalho}>
-        <div>
-            <h4>Qualidade dos dados</h4>
-            <p>Estado atual das medições do equipamento</p>
-        </div>
+                        <div className={styles.qualidadeCabecalho}>
+                            <div>
+                                <h4>Qualidade dos dados</h4>
+                                <p>Estado atual das medições do equipamento</p>
+                            </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <button
-                type="button"
-                className={styles.btnPesquisar}
-                onClick={atualizarQualidade}
-                disabled={carregandoQualidade}
-                title="Atualizar manualmente o estado de qualidade"
-            >
-                {carregandoQualidade ? "Atualizando..." : "Atualizar"}
-            </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <button
+                                    type="button"
+                                    className={styles.btnPesquisar}
+                                    onClick={atualizarQualidade}
+                                    disabled={carregandoQualidade}
+                                    title="Atualizar manualmente o estado de qualidade"
+                                >
+                                    {carregandoQualidade ? "Atualizando..." : "Atualizar"}
+                                </button>
 
-            <span
-                className={`${styles.badgeStatus} ${badgeStatus.classe}`}
-                role="status"
-                title={badgeStatus.descricao}
-            >
-                {badgeStatus.texto}
-            </span>
-        </div>
-    </div>
+                                <span
+                                    className={`${styles.badgeStatus} ${badgeStatus.classe}`}
+                                    role="status"
+                                    title={badgeStatus.descricao}
+                                >
+                                    {badgeStatus.texto}
+                                </span>
+                            </div>
+                        </div>
 
-    {erroQualidade && (
-        <div className={styles.errorBox} role="alert" style={{ marginTop: '0.75rem' }}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            {erroQualidade}
-        </div>
-    )}
+                        {erroQualidade && (
+                            <div className={styles.errorBox} role="alert" style={{ marginTop: '0.75rem' }}>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                </svg>
+                                {erroQualidade}
+                            </div>
+                        )}
 
-    {!erroQualidade && statusAtualQualidade === "sem_dados" && !carregandoQualidade && (
-        <p className={styles.qualidadeSemDados} role="status" style={{ marginTop: '0.75rem' }}>
-            Ausência de dados: nenhuma leitura válida foi registrada para este equipamento até o momento.
-        </p>
-    )}
+                        {!erroQualidade && statusAtualQualidade === "sem_dados" && !carregandoQualidade && (
+                            <p className={styles.qualidadeSemDados} role="status" style={{ marginTop: '0.75rem' }}>
+                                Ausência de dados: nenhuma leitura válida foi registrada para este equipamento até o momento.
+                            </p>
+                        )}
 
-    {statusAtualQualidade === "desatualizado" && (
-        <p className={styles.qualidadeAviso} role="status" style={{ marginTop: '0.75rem' }}>
-            Leitura antiga: a última medição válida ultrapassou o intervalo esperado de atualização.
-        </p>
-    )}
+                        {statusAtualQualidade === "desatualizado" && (
+                            <p className={styles.qualidadeAviso} role="status" style={{ marginTop: '0.75rem' }}>
+                                Leitura antiga: a última medição válida ultrapassou o intervalo esperado de atualização.
+                            </p>
+                        )}
 
-    <div className={styles.qualidadeInformacoes}>
-        <div className={styles.qualidadeItem}>
-            <span>Última medição válida</span>
-            <strong>
-                {qualidade?.ultima_medicao_valida ?? "Não disponível"}
-            </strong>
-        </div>
+                        <div className={styles.qualidadeInformacoes}>
+                            <div className={styles.qualidadeItem}>
+                                <span>Última medição válida</span>
+                                <strong>
+                                    {qualidade?.ultima_medicao_valida ?? "Não disponível"}
+                                </strong>
+                            </div>
 
-        <div className={styles.qualidadeItem}>
-            <span>Tempo desde a última medição</span>
-            <strong>
-                {formatarIdadeMinutos(qualidade?.idade_minutos)}
-            </strong>
-        </div>
-    </div>
+                            <div className={styles.qualidadeItem}>
+                                <span>Tempo desde a última medição</span>
+                                <strong>
+                                    {formatarIdadeMinutos(qualidade?.idade_minutos)}
+                                </strong>
+                            </div>
+                        </div>
 
-    <div className={styles.qualidadeContagens}>
-        <span className={`${styles.badgeContagem} ${styles.badgeNulos}`}>
-            Nulos: {qualidade?.registros_nulos ?? "—"}
-        </span>
+                        <div className={styles.qualidadeContagens}>
+                            <span className={`${styles.badgeContagem} ${styles.badgeNulos}`}>
+                                Nulos: {qualidade?.registros_nulos ?? "—"}
+                            </span>
 
-        <span className={`${styles.badgeContagem} ${styles.badgeInvalidos}`}>
-            Inválidos: {qualidade?.registros_invalidos ?? "—"}
-        </span>
-    </div>
-</div>
+                            <span className={`${styles.badgeContagem} ${styles.badgeInvalidos}`}>
+                                Inválidos: {qualidade?.registros_invalidos ?? "—"}
+                            </span>
+                        </div>
+                    </div>
 
                     <div className={styles.abas}>
                         <button
@@ -1174,7 +1153,6 @@ function formatarIdadeMinutos(minutos) {
                     </div>
 
                     {abaAnalise === "resumo" && (
-                        // Filtros: Resumo
                         <div className={styles.filtrosCard}>
                             <div className={styles.filtrosInputs}>
                                 <div className={styles.campoVar}>
@@ -1186,8 +1164,11 @@ function formatarIdadeMinutos(minutos) {
                                         onChange={(e) => setVariavelResumo(e.target.value)}
                                     >
                                         <option value="">Selecione...</option>
-                                        <option value="ph">pH</option>
-                                        <option value="temperatura">Temperatura</option>
+                                        {opcoesVariaveis.map((opcao) => (
+                                            <option key={opcao.value} value={opcao.value}>
+                                                {opcao.label}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
 
@@ -1198,6 +1179,7 @@ function formatarIdadeMinutos(minutos) {
                                         className={styles.inputDate}
                                         type="date"
                                         value={dataInicioR}
+                                        max={dataFinalR || undefined}
                                         onChange={(e) => setDatainicioR(e.target.value)}
                                     />
                                 </div>
@@ -1208,6 +1190,7 @@ function formatarIdadeMinutos(minutos) {
                                         className={styles.inputDate}
                                         type="date"
                                         value={dataFinalR}
+                                        min={dataInicioR || undefined}
                                         onChange={(e) => setDataFinalR(e.target.value)}
                                     />
                                 </div>
@@ -1237,7 +1220,6 @@ function formatarIdadeMinutos(minutos) {
                     )}
 
                     {abaAnalise === "comparacao" && (
-                        // Filtros: Comparação
                         <div className={styles.filtrosGrid}>
 
                             <div className={styles.campoVar}>
@@ -1252,33 +1234,11 @@ function formatarIdadeMinutos(minutos) {
                                     }}
                                 >
                                     <option value="">Selecione...</option>
-                                    {equipamento?.tipo === 'boia' ? (
-                                        <>
-                                            <option value="ph">pH</option>
-                                            <option value="turbidez_ntu">Turbidez (NTU)</option>
-                                            <option value="sensor_uv_v">Sensor UV (V)</option>
-                                            <option value="adc">ADC</option>
-                                        </>
-                                    ) : equipamento?.tipo === 'estacao' ? (
-                                        <>
-                                            <option value="temperatura">Temperatura (°C)</option>
-                                            <option value="umidade">Umidade (%)</option>
-                                            <option value="pressao">Pressão (hPa)</option>
-                                            <option value="vento">Vento (m/s)</option>
-                                            <option value="rpm">RPM</option>
-                                            <option value="luz">Luminosidade (lx)</option>
-                                            <option value="ar">Qualidade do ar (AQI)</option>
-                                            <option value="gas">Gás (ppm)</option>
-                                            <option value="volt">Tensão Elétrica (V)</option>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <option value="temperatura">Temperatura (°C)</option>
-                                            <option value="umidade">Umidade (%)</option>
-                                            <option value="ph">pH</option>
-                                            <option value="turbidez_ntu">Turbidez (NTU)</option>
-                                        </>
-                                    )}
+                                    {opcoesVariaveis.map((opcao) => (
+                                        <option key={opcao.value} value={opcao.value}>
+                                            {opcao.label}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
 
@@ -1289,6 +1249,7 @@ function formatarIdadeMinutos(minutos) {
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataInicioP1}
+                                    max={dataFinalP1 || undefined}
                                     onChange={(e) => setDatainicioP1(e.target.value)}
                                 />
                             </div>
@@ -1299,6 +1260,7 @@ function formatarIdadeMinutos(minutos) {
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataFinalP1}
+                                    min={dataInicioP1 || undefined}
                                     onChange={(e) => setDataFinalP1(e.target.value)}
                                 />
                             </div>
@@ -1310,6 +1272,7 @@ function formatarIdadeMinutos(minutos) {
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataInicioP2}
+                                    max={dataFinalP2 || undefined}
                                     onChange={(e) => setDatainicioP2(e.target.value)}
                                 />
                             </div>
@@ -1320,6 +1283,7 @@ function formatarIdadeMinutos(minutos) {
                                     className={styles.inputDate}
                                     type="date"
                                     value={dataFinalP2}
+                                    min={dataInicioP2 || undefined}
                                     onChange={(e) => setDataFinalP2(e.target.value)}
                                 />
                             </div>
@@ -1399,6 +1363,11 @@ function formatarIdadeMinutos(minutos) {
             </div>
         </div>
     )
+}
+
+function Historico() {
+    const { identifier } = useParams()
+    return <HistoricoConteudo key={identifier} identifier={identifier} />
 }
 
 export default Historico
