@@ -11,6 +11,8 @@ import {
 import { baixarRelatorioPDF } from '../services/chatServices'
 import { createPortal } from 'react-dom'
 import { useFluxoAnalise } from '../contexts/FluxoAnaliseContext'
+import { useAvisosOperacionais } from '../hooks/useAvisosOperacionais.js'
+import AvisosOperacionais from './AvisosOperacionais.jsx'
 
 function SensorLineChart({
     titulo,
@@ -113,6 +115,11 @@ function formatarDataHora(hora) {
 }
 
 function Dashboard({ equipamento, onFechar }) {
+    const {
+    dadosAvisos,
+    carregandoAvisos,
+    erroAvisos,
+} = useAvisosOperacionais(equipamento?.identificador)
     const {
         selecionarEquipamento,
         periodoDraft,
@@ -446,7 +453,14 @@ function Dashboard({ equipamento, onFechar }) {
                     </button>
                 </div>
             </div>
-
+                
+                <AvisosOperacionais
+    equipamentoId={equipamento.identificador}
+    dadosAvisos={dadosAvisos}
+    carregando={carregandoAvisos}
+    erro={erroAvisos}
+    statusDados={statusDados} />
+    
             {/* Mensagens Globais */}
             {carregando && (
                 <div className={styles.loadingBox}>
